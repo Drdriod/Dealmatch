@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-// Draws an animated canvas of people-nodes connected to property-nodes
-// via living, breathing lines — like a heartbeat connecting two worlds.
+// Premium real estate background
+// Deep architectural grid + floating property silhouettes + subtle gold particles
+// Mature, serious, aspirational — like a luxury property brochure
 export default function HeroBackground() {
   const canvasRef = useRef(null)
 
@@ -10,6 +11,7 @@ export default function HeroBackground() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     let animId
+    let t = 0
 
     const resize = () => {
       canvas.width  = window.innerWidth
@@ -18,190 +20,186 @@ export default function HeroBackground() {
     resize()
     window.addEventListener('resize', resize)
 
-    // ── Node types ──────────────────────────────────────
-    const PEOPLE_EMOJI  = ['👤','👩🏾','👨🏿','👩🏽','🧔🏽','👩🏻']
-    const PROP_EMOJI    = ['🏡','🌿','🏢','🏠','🏘️','🏬']
-
     const W = () => canvas.width
     const H = () => canvas.height
 
-    // Create nodes — people on left, properties on right
-    const makeNodes = () => {
-      const nodes = []
-      const count = Math.min(6, Math.floor(W() / 130))
+    // ── Particles — gold dust floating upward ──────────
+    const particles = Array.from({ length: 40 }, () => ({
+      x:     Math.random() * 1200,
+      y:     Math.random() * 900,
+      r:     0.8 + Math.random() * 2.2,
+      speed: 0.15 + Math.random() * 0.4,
+      drift: (Math.random() - 0.5) * 0.3,
+      alpha: 0.2 + Math.random() * 0.5,
+      pulse: Math.random() * Math.PI * 2,
+    }))
 
-      for (let i = 0; i < count; i++) {
-        // Person node — left cluster
-        nodes.push({
-          type:  'person',
-          emoji: PEOPLE_EMOJI[i % PEOPLE_EMOJI.length],
-          x: W() * 0.12 + (Math.random() - 0.5) * W() * 0.12,
-          y: H() * (0.2 + (i / count) * 0.65),
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-          r:  18 + Math.random() * 8,
-          pulse: Math.random() * Math.PI * 2,
-          paired: i, // paired with property i
-        })
-        // Property node — right cluster
-        nodes.push({
-          type:  'property',
-          emoji: PROP_EMOJI[i % PROP_EMOJI.length],
-          x: W() * 0.88 + (Math.random() - 0.5) * W() * 0.12,
-          y: H() * (0.2 + (i / count) * 0.65),
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-          r:  18 + Math.random() * 8,
-          pulse: Math.random() * Math.PI * 2,
-          paired: i,
-        })
+    // ── Connection lines — subtle property chain ───────
+    const nodes = Array.from({ length: 5 }, (_, i) => ({
+      x:     W() * (0.1 + i * 0.2),
+      y:     H() * (0.25 + Math.sin(i * 1.3) * 0.2),
+      vx:    (Math.random() - 0.5) * 0.25,
+      vy:    (Math.random() - 0.5) * 0.15,
+      r:     3 + Math.random() * 3,
+      pulse: Math.random() * Math.PI * 2,
+    }))
+
+    const drawGrid = () => {
+      // Subtle perspective grid — like architectural blueprint
+      const gridAlpha = 0.04
+      ctx.strokeStyle = `rgba(201,106,58,${gridAlpha})`
+      ctx.lineWidth   = 0.5
+
+      const spacing = 60
+      // Horizontal lines
+      for (let y = 0; y < H(); y += spacing) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(W(), y)
+        ctx.stroke()
       }
-      return nodes
-    }
+      // Vertical lines
+      for (let x = 0; x < W(); x += spacing) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, H())
+        ctx.stroke()
+      }
 
-    let nodes = makeNodes()
-    let t = 0
-
-    // ── Heart pulse along the chain ─────────────────────
-    const drawChain = (x1, y1, x2, y2, progress, alpha) => {
-      const mx = (x1 + x2) / 2
-      const my = (y1 + y2) / 2 - 40 // slight arc upward
-
-      // Main connection line — gradient from person to property
-      const grad = ctx.createLinearGradient(x1, y1, x2, y2)
-      grad.addColorStop(0,   `rgba(201,106,58,${alpha * 0.5})`)
-      grad.addColorStop(0.5, `rgba(212,168,83,${alpha * 0.8})`)
-      grad.addColorStop(1,   `rgba(122,158,126,${alpha * 0.5})`)
-
-      ctx.beginPath()
-      ctx.moveTo(x1, y1)
-      ctx.quadraticCurveTo(mx, my, x2, y2)
-      ctx.strokeStyle = grad
-      ctx.lineWidth   = 1.5
-      ctx.setLineDash([4, 6])
-      ctx.lineDashOffset = -t * 0.8
-      ctx.stroke()
-      ctx.setLineDash([])
-
-      // Travelling pulse dot
-      const bt = progress
-      const px = (1-bt)*(1-bt)*x1 + 2*(1-bt)*bt*mx + bt*bt*x2
-      const py = (1-bt)*(1-bt)*y1 + 2*(1-bt)*bt*my + bt*bt*y2
-
-      const glow = ctx.createRadialGradient(px, py, 0, px, py, 8)
-      glow.addColorStop(0,   `rgba(212,168,83,${alpha * 0.9})`)
-      glow.addColorStop(0.5, `rgba(201,106,58,${alpha * 0.4})`)
-      glow.addColorStop(1,   'rgba(201,106,58,0)')
-      ctx.beginPath()
-      ctx.arc(px, py, 8, 0, Math.PI * 2)
-      ctx.fillStyle = glow
-      ctx.fill()
-
-      // Heart at midpoint, pulsing
-      const heartScale = 0.8 + Math.sin(t * 0.04 + progress * Math.PI) * 0.2
-      const hx = mx
-      const hy = my
-      ctx.save()
-      ctx.translate(hx, hy)
-      ctx.scale(heartScale, heartScale)
-      ctx.font = '14px serif'
-      ctx.textAlign    = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.globalAlpha  = alpha * 0.7
-      ctx.fillText('❤️', 0, 0)
-      ctx.restore()
-    }
-
-    const drawNode = (node) => {
-      node.pulse += 0.025
-      const scale = 1 + Math.sin(node.pulse) * 0.08
-
-      // Glow ring
-      const color = node.type === 'person'
-        ? `rgba(201,106,58,`
-        : `rgba(122,158,126,`
-      const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.r * 2.5)
-      glow.addColorStop(0,   color + '0.15)')
-      glow.addColorStop(0.5, color + '0.06)')
-      glow.addColorStop(1,   color + '0)')
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, node.r * 2.5, 0, Math.PI * 2)
-      ctx.fillStyle = glow
-      ctx.fill()
-
-      // Circle background
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, node.r * scale, 0, Math.PI * 2)
-      ctx.fillStyle = node.type === 'person'
-        ? 'rgba(201,106,58,0.12)'
-        : 'rgba(122,158,126,0.12)'
-      ctx.fill()
-      ctx.strokeStyle = node.type === 'person'
-        ? 'rgba(201,106,58,0.3)'
-        : 'rgba(122,158,126,0.3)'
+      // Diagonal accent lines — top right corner
+      ctx.strokeStyle = `rgba(212,168,83,0.05)`
       ctx.lineWidth = 1
-      ctx.stroke()
+      for (let i = 0; i < 8; i++) {
+        const offset = i * 80
+        ctx.beginPath()
+        ctx.moveTo(W() - offset, 0)
+        ctx.lineTo(W(), offset)
+        ctx.stroke()
+      }
+    }
 
-      // Emoji
-      ctx.font = `${node.r * scale}px serif`
-      ctx.textAlign    = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.globalAlpha  = 0.85
-      ctx.fillText(node.emoji, node.x, node.y)
-      ctx.globalAlpha  = 1
+    const drawParticles = () => {
+      particles.forEach(p => {
+        p.y     -= p.speed
+        p.x     += p.drift
+        p.pulse += 0.02
+        const alpha = p.alpha * (0.7 + Math.sin(p.pulse) * 0.3)
+
+        // Reset when off screen
+        if (p.y < -10) {
+          p.y = H() + 10
+          p.x = Math.random() * W()
+        }
+        if (p.x < -10 || p.x > W() + 10) {
+          p.x = Math.random() * W()
+        }
+
+        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3)
+        glow.addColorStop(0,   `rgba(212,168,83,${alpha})`)
+        glow.addColorStop(0.5, `rgba(201,106,58,${alpha * 0.4})`)
+        glow.addColorStop(1,   'rgba(201,106,58,0)')
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2)
+        ctx.fillStyle = glow
+        ctx.fill()
+      })
+    }
+
+    const drawConnections = () => {
+      // Move nodes gently
+      nodes.forEach(n => {
+        n.x += n.vx
+        n.y += n.vy
+        n.pulse += 0.018
+
+        if (n.x < 40 || n.x > W() - 40) n.vx *= -1
+        if (n.y < 40 || n.y > H() - 40) n.vy *= -1
+      })
+
+      // Draw connections between nearby nodes
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i]
+          const b = nodes[j]
+          const dist = Math.hypot(a.x - b.x, a.y - b.y)
+          if (dist > 350) continue
+
+          const alpha = (1 - dist / 350) * 0.12
+          const grad  = ctx.createLinearGradient(a.x, a.y, b.x, b.y)
+          grad.addColorStop(0,   `rgba(201,106,58,${alpha})`)
+          grad.addColorStop(0.5, `rgba(212,168,83,${alpha * 1.5})`)
+          grad.addColorStop(1,   `rgba(122,158,126,${alpha})`)
+
+          ctx.beginPath()
+          ctx.moveTo(a.x, a.y)
+          ctx.lineTo(b.x, b.y)
+          ctx.strokeStyle = grad
+          ctx.lineWidth   = 0.8
+          ctx.setLineDash([3, 8])
+          ctx.lineDashOffset = -t * 0.3
+          ctx.stroke()
+          ctx.setLineDash([])
+        }
+
+        // Draw node dot
+        const n     = nodes[i]
+        const scale = 1 + Math.sin(n.pulse) * 0.15
+        const alpha = 0.25 + Math.sin(n.pulse) * 0.1
+
+        const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 4 * scale)
+        glow.addColorStop(0,   `rgba(201,106,58,${alpha})`)
+        glow.addColorStop(0.5, `rgba(201,106,58,${alpha * 0.3})`)
+        glow.addColorStop(1,   'rgba(201,106,58,0)')
+        ctx.beginPath()
+        ctx.arc(n.x, n.y, n.r * 4 * scale, 0, Math.PI * 2)
+        ctx.fillStyle = glow
+        ctx.fill()
+
+        ctx.beginPath()
+        ctx.arc(n.x, n.y, n.r * scale, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(201,106,58,${alpha * 2})`
+        ctx.fill()
+      }
+    }
+
+    // Large subtle circle accents — architectural feel
+    const drawCircleAccents = () => {
+      const accents = [
+        { x: W() * 0.85, y: H() * 0.15, r: 180, color: 'rgba(212,168,83,0.04)' },
+        { x: W() * 0.1,  y: H() * 0.8,  r: 140, color: 'rgba(201,106,58,0.04)' },
+        { x: W() * 0.5,  y: H() * 0.5,  r: 300, color: 'rgba(122,158,126,0.025)' },
+      ]
+      accents.forEach(a => {
+        ctx.beginPath()
+        ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2)
+        ctx.strokeStyle = a.color
+        ctx.lineWidth   = 1
+        ctx.stroke()
+
+        // Inner ring
+        ctx.beginPath()
+        ctx.arc(a.x, a.y, a.r * 0.6, 0, Math.PI * 2)
+        ctx.strokeStyle = a.color
+        ctx.stroke()
+      })
     }
 
     const animate = () => {
       t++
       ctx.clearRect(0, 0, W(), H())
-
-      // Separate people and property nodes
-      const people     = nodes.filter(n => n.type === 'person')
-      const properties = nodes.filter(n => n.type === 'property')
-
-      // Draw connections first (behind nodes)
-      people.forEach((person, i) => {
-        const prop = properties[i % properties.length]
-        if (!prop) return
-        const progress = ((t * 0.008) + i * 0.3) % 1
-        drawChain(person.x, person.y, prop.x, prop.y, progress, 0.7)
-      })
-
-      // Draw nodes on top
-      nodes.forEach(node => {
-        // Gentle float
-        node.x += node.vx
-        node.y += node.vy
-
-        // Soft boundary bounce
-        const marginX = W() * (node.type === 'person' ? 0.22 : 0.78)
-        const spread  = W() * 0.1
-        if (node.type === 'person') {
-          if (node.x < spread)        { node.x = spread;        node.vx *= -1 }
-          if (node.x > marginX)       { node.x = marginX;       node.vx *= -1 }
-        } else {
-          if (node.x < marginX)       { node.x = marginX;       node.vx *= -1 }
-          if (node.x > W() - spread)  { node.x = W() - spread;  node.vx *= -1 }
-        }
-        if (node.y < H() * 0.1)      { node.y = H() * 0.1;     node.vy *= -1 }
-        if (node.y > H() * 0.9)      { node.y = H() * 0.9;     node.vy *= -1 }
-
-        drawNode(node)
-      })
-
+      drawGrid()
+      drawCircleAccents()
+      drawConnections()
+      drawParticles()
       animId = requestAnimationFrame(animate)
     }
 
     animate()
 
-    // Recreate nodes on resize
-    const handleResize = () => { nodes = makeNodes() }
-    window.addEventListener('resize', handleResize)
-
+    window.addEventListener('resize', resize)
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
-      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
@@ -209,7 +207,7 @@ export default function HeroBackground() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.7 }}
     />
   )
 }
