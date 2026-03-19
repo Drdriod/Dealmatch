@@ -48,7 +48,7 @@ export default function HomePage() {
     <div className="overflow-x-hidden">
 
       {/* ════════ HERO ════════ */}
-      <section className="min-h-screen flex items-center px-5 pt-24 pb-16 relative overflow-hidden bg-[#FAF6F0]">
+      <section className="min-h-screen flex items-center px-5 pt-24 pb-16 relative overflow-hidden bg-[#F5EDE0]">
 
         {/* Animated canvas background — people ↔ properties chain */}
         <HeroBackground />
@@ -58,7 +58,7 @@ export default function HomePage() {
           {/* Centre glow so text stays readable */}
           <div style={{
             position:'absolute', inset:0,
-            background:'radial-gradient(ellipse 55% 70% at 50% 50%, rgba(250,246,240,0.82) 0%, rgba(250,246,240,0.4) 55%, transparent 100%)'
+            background:'radial-gradient(ellipse 55% 70% at 50% 50%, rgba(245,237,224,0.97) 0%, rgba(245,237,224,0.90) 40%, rgba(245,237,224,0.2) 100%)'
           }} />
           {/* Left warm accent */}
           <div style={{
@@ -174,7 +174,7 @@ export default function HomePage() {
       </div>
 
       {/* ════════ HOW IT WORKS ════════ */}
-      <section id="how" className="py-24 px-6 bg-white">
+      <section id="how" className="py-24 px-6" style={{backgroundColor:"#F5EDE0"}}>
         <div className="max-w-6xl mx-auto">
           <FadeUp className="text-center mb-16">
             <p className="section-tag">The Process</p>
@@ -184,11 +184,11 @@ export default function HomePage() {
           <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8" stagger={0.15}>
             {STEPS.map(s => (
               <StaggerItem key={s.num}>
-                <div className="group bg-cream rounded-3xl p-8 relative overflow-hidden hover:shadow-card transition-all duration-300 hover:-translate-y-2 border border-deep/5">
-                  <div className="font-display text-8xl font-black text-terracotta/6 absolute -top-2 -right-2 leading-none pointer-events-none">{s.num}</div>
-                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">{s.icon}</div>
-                  <h3 className="font-display text-xl font-black mb-3">{s.title}</h3>
-                  <p className="text-deep/50 text-sm leading-relaxed">{s.desc}</p>
+                <div className="group rounded-3xl p-8 relative overflow-hidden hover:shadow-card transition-all duration-300 hover:-translate-y-2 border border-[#E8DDD2]" style={{backgroundColor:"#FFFAF5"}}>
+                  <div className="font-display text-[7rem] font-black absolute -top-4 -right-3 leading-none pointer-events-none select-none" style={{color:"rgba(201,106,58,0.08)"}}>{s.num}</div>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform shadow-sm" style={{backgroundColor:"#FFFFFF"}}>{s.icon}</div>
+                  <h3 className="font-display text-2xl font-black mb-3 text-[#1A1210]">{s.title}</h3>
+                  <p className="text-[#5C4A3A] text-sm leading-[1.8] tracking-wide">{s.desc}</p>
                 </div>
               </StaggerItem>
             ))}
@@ -197,7 +197,7 @@ export default function HomePage() {
       </section>
 
       {/* ════════ CITIES ════════ */}
-      <section className="py-24 px-6 bg-cream">
+      <section className="py-24 px-6" style={{backgroundColor:"#F5EDE0"}}>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-end justify-between mb-14 flex-wrap gap-4">
             <FadeUp>
@@ -214,7 +214,7 @@ export default function HomePage() {
             {CITIES.map(city => (
               <StaggerItem key={city.name}>
                 <Link to={`/browse?state=${city.name}`}
-                  className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-card transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 border border-deep/5 hover:border-terracotta/20">
+                  className="group rounded-2xl p-5 shadow-sm hover:shadow-card transition-all duration-300 hover:-translate-y-1 flex flex-col gap-3 border border-[#E8DDD2] hover:border-terracotta/40" style={{backgroundColor:"#FFFAF5"}}>
                   <div className="text-3xl">{city.emoji}</div>
                   <div>
                     <h3 className="font-display text-lg font-black text-deep group-hover:text-terracotta transition-colors">{city.name}</h3>
@@ -234,7 +234,7 @@ export default function HomePage() {
       </section>
 
       {/* ════════ MAP EXPLORER ════════ */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-24 px-6" style={{backgroundColor:"#FFFFFF"}}>
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <SlideLeft>
@@ -294,7 +294,7 @@ export default function HomePage() {
       </section>
 
       {/* ════════ TESTIMONIALS ════════ */}
-      <section className="py-24 px-6 bg-cream">
+      <section className="py-24 px-6" style={{backgroundColor:"#F5EDE0"}}>
         <div className="max-w-6xl mx-auto">
           <FadeUp className="text-center mb-16">
             <p className="section-tag">Love Stories</p>
@@ -304,7 +304,7 @@ export default function HomePage() {
           <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6" stagger={0.12}>
             {TESTIMONIALS.map(t => (
               <StaggerItem key={t.name}>
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-deep/5 hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+                <div className="rounded-3xl p-8 shadow-sm border border-[#E8DDD2] hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col h-full" style={{backgroundColor:"#FFFAF5"}}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-gold text-base">{'★'.repeat(t.stars)}</div>
                     <span className="text-xs bg-sage/10 text-sage font-bold px-3 py-1 rounded-full">{t.tag}</span>
@@ -339,7 +339,7 @@ export default function HomePage() {
             ].map(({ icon, title, desc }) => (
               <StaggerItem key={title}>
                 <div className="text-center flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-cream shadow-sm flex items-center justify-center">{icon}</div>
+                  <div className="w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center" style={{backgroundColor:"#FFFAF5"}}>{icon}</div>
                   <p className="text-sm font-semibold text-deep">{title}</p>
                   <p className="text-xs text-deep/40 leading-relaxed">{desc}</p>
                 </div>
