@@ -290,7 +290,7 @@ export default function OnboardingPage() {
     setSaving(true)
     const { error } = await upsertProfile({
       id:                   user.id,
-      full_name:            profile?.full_name || user.user_metadata?.full_name,
+      full_name:            profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name,
       role:                 data.role || 'buyer',
       buyer_preferences:    data,
       onboarding_completed: true,
