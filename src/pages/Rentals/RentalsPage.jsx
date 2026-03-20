@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext'
 import { analytics } from '@/lib/posthog'
 import { recordSwipe } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import DealAgreement from '@/components/ui/DealAgreement'
 import clsx from 'clsx'
 
 const formatPrice = (n, period) => {
@@ -364,7 +365,8 @@ export default function RentalsPage() {
   const [rentals, setRentals]   = useState(DEMO_RENTALS)
   const [queue, setQueue]       = useState(DEMO_RENTALS)
   const [loading, setLoading]   = useState(false)
-  const [interest, setInterest] = useState(null) // property for interest modal
+  const [interest, setInterest] = useState(null)
+  const [agreement, setAgreement] = useState(null)
 
   const filtered = rentals.filter(r => {
     const matchCat = category === 'all' || r.category === category
@@ -458,7 +460,7 @@ export default function RentalsPage() {
               </div>
             ) : (
               filtered.map(property => (
-                <RentalCard key={property.id} property={property} onInterest={setInterest} />
+                <RentalCard key={property.id} property={property} onInterest={setAgreement} />
               ))
             )}
           </div>
@@ -489,7 +491,7 @@ export default function RentalsPage() {
                     <RentalSwipeCard
                       property={currentCard}
                       onSwipe={handleSwipe}
-                      onInterest={setInterest}
+                      onInterest={setAgreement}
                     />
                   </div>
                 </>
@@ -512,7 +514,7 @@ export default function RentalsPage() {
 
       {/* Interest modal */}
       <AnimatePresence>
-        {interest && <InterestModal property={interest} onClose={() => setInterest(null)} />}
+        {agreement && <DealAgreement property={agreement} category={agreement.category || 'rental'} onClose={() => setAgreement(null)} onAccepted={() => { setAgreement(null); toast.success('Agreement submitted! DealMatch will contact you shortly.') }} />}
       </AnimatePresence>
     </div>
   )
