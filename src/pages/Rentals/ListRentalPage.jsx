@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Upload, Video, Image, X, Check } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useVerificationGuard } from '@/hooks/useVerificationGuard'
 import { createProperty } from '@/lib/supabase'
 import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
@@ -38,6 +39,7 @@ const INITIAL = {
 export default function ListRentalPage() {
   const { user } = useAuth()
   const navigate  = useNavigate()
+  const { check } = useVerificationGuard()
   const [step, setStep]     = useState(0)
   const [saving, setSaving] = useState(false)
   const [agreed, setAgreed] = useState(false)
@@ -351,6 +353,7 @@ export default function ListRentalPage() {
   const isLast  = step === steps.length - 1
 
   const handleNext = () => {
+    if (step === 0 && !check('list_rental')) return
     if (!current.valid()) { toast.error('Please complete required fields'); return }
     if (isLast) handleSubmit()
     else setStep(s => s + 1)
