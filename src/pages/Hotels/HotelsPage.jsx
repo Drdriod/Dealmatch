@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Star, Wifi, Car, Coffee, X, Search, Grid, Layers, RefreshCw } from 'lucide-react'
 import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
+import DealAgreement from '@/components/ui/DealAgreement'
 
 const DEMO_HOTELS = [
   { id:'h1', name:'The Meridian Uyo', category:'hotel', city:'Uyo', state:'Akwa Ibom', price_per_night:35_000, rating:4.8, reviews:124, type:'Hotel', rooms:45, amenities:['WiFi','Pool','Restaurant','Gym','Parking','AC'], description:'A premium hotel in the heart of Uyo offering world-class hospitality. Perfect for business and leisure travellers.', images:[{url:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',is_primary:true}], contact_phone:'+2347057392060', contact_email:'info@meridianhotel.com' },
@@ -245,6 +247,7 @@ function HotelCard({ hotel, onBook }) {
 export default function HotelsPage() {
   const [search, setSearch]   = useState('')
   const [booking, setBooking] = useState(null)
+  const [agreement, setAgreement] = useState(null)
   const [filter, setFilter]   = useState('all')
 
   const filtered = DEMO_HOTELS.filter(h => {
@@ -304,10 +307,10 @@ export default function HotelsPage() {
             <p className="font-semibold text-sm" style={{color:'#FFFFFF'}}>Are you a hotel or lodge owner?</p>
             <p className="text-xs mt-0.5" style={{color:'rgba(255,255,255,0.4)'}}>Get direct bookings from guests across Nigeria</p>
           </div>
-          <div className="px-4 py-2 rounded-xl text-xs font-bold"
+          <Link to='/list-rental?type=hotel' className="px-4 py-2 rounded-xl text-xs font-bold"
             style={{backgroundColor:'#D4A853', color:'#1A1210'}}>
             List Hotel →
-          </div>
+          </Link>
         </div>
 
         {/* Hotel grid */}
@@ -320,13 +323,14 @@ export default function HotelsPage() {
             </div>
           ) : (
             filtered.map(hotel => (
-              <HotelCard key={hotel.id} hotel={hotel} onBook={setBooking} />
+              <HotelCard key={hotel.id} hotel={hotel} onBook={(hotel) => setAgreement({...hotel, category:'hotel', price: hotel.price_per_night})} />
             ))
           )}
         </div>
       </div>
 
       <AnimatePresence>
+        {agreement && <DealAgreement property={agreement} category='hotel' onClose={() => setAgreement(null)} onAccepted={() => { setAgreement(null); setBooking(agreement); }} />}
         {booking && <BookingModal hotel={booking} onClose={() => setBooking(null)} />}
       </AnimatePresence>
     </div>
