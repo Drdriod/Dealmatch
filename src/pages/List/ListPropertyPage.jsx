@@ -50,9 +50,10 @@ const INITIAL = {
 export default function ListPropertyPage() {
   const { user } = useAuth()
   const navigate  = useNavigate()
-  const { check } = useVerificationGuard()
+  const { checkAsync } = useVerificationGuard()
   const [step,   setStep]   = useState(0)
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved]   = useState(false)
   const [form,   setForm]   = useState(INITIAL)
   const [agreed, setAgreed] = useState(false)
 
@@ -390,9 +391,10 @@ export default function ListPropertyPage() {
   const current = steps[step]
   const isLast  = step === steps.length - 1
 
-  const handleNext = () => {
-    // Check verification on first step
-    if (step === 0 && !check('sell')) return
+  const handleNext = async () => {
+    // Always fetch fresh verification status
+    const verified = await checkAsync('sell')
+    if (!verified) return
     if (!current.valid()) { toast.error('Please complete all required fields'); return }
     if (isLast) handleSubmit()
     else setStep(s => s + 1)
@@ -419,8 +421,45 @@ export default function ListPropertyPage() {
     }
     await indexProperty(data)
     analytics.propertyListed(data.id, data.property_type)
-    toast.success('Property listed and now matching buyers! 🎉')
-    navigate('/dashboard')
+    setSaved(true)
+  }
+
+  // ── Success screen ──────────────────────────────────────
+  if (saved) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6" style={{backgroundColor:'#FFFAF5'}}>
+        <div className="w-full max-w-sm text-center">
+          <div className="text-6xl mb-5">🎉</div>
+          <h1 className="font-display text-3xl font-black mb-2" style={{color:'#1A1210'}}>
+            Property Listed!
+          </h1>
+          <p className="text-sm leading-relaxed mb-8" style={{color:'#8A7E78'}}>
+            Your property is now live on DealMatch and matching with buyers. You'll be notified when someone expresses interest.
+          </p>
+          <div className="space-y-3">
+            <button onClick={() => navigate('/browse')}
+              className="btn-primary w-full py-4 text-base">
+              Browse Other Properties →
+            </button>
+            <button onClick={() => navigate('/list')}
+              className="w-full py-4 rounded-2xl text-sm font-semibold border-2 transition-all"
+              style={{borderColor:'#E8DDD2', color:'#5C4A3A', backgroundColor:'#FFFFFF'}}>
+              + List Another Property
+            </button>
+            <button onClick={() => navigate('/dashboard')}
+              className="w-full py-4 rounded-2xl text-sm font-semibold transition-all"
+              style={{color:'#8A7E78'}}>
+              Go to Dashboard
+            </button>
+            <button onClick={() => navigate('/')}
+              className="w-full py-3 text-sm transition-all"
+              style={{color:'rgba(26,18,16,0.4)'}}>
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
