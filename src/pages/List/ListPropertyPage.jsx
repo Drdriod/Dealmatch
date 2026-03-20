@@ -5,6 +5,7 @@ import { createProperty } from '@/lib/supabase'
 import { indexProperty } from '@/lib/pinecone'
 import { analytics } from '@/lib/posthog'
 import { useAuth } from '@/context/AuthContext'
+import { useVerificationGuard } from '@/hooks/useVerificationGuard'
 import toast from 'react-hot-toast'
 import CommissionAgreement from '@/components/ui/CommissionAgreement'
 import clsx from 'clsx'
@@ -49,6 +50,7 @@ const INITIAL = {
 export default function ListPropertyPage() {
   const { user } = useAuth()
   const navigate  = useNavigate()
+  const { check } = useVerificationGuard()
   const [step,   setStep]   = useState(0)
   const [saving, setSaving] = useState(false)
   const [form,   setForm]   = useState(INITIAL)
@@ -389,6 +391,8 @@ export default function ListPropertyPage() {
   const isLast  = step === steps.length - 1
 
   const handleNext = () => {
+    // Check verification on first step
+    if (step === 0 && !check('sell')) return
     if (!current.valid()) { toast.error('Please complete all required fields'); return }
     if (isLast) handleSubmit()
     else setStep(s => s + 1)
