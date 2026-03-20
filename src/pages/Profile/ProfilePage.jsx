@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Camera, Upload, CheckCircle, Shield, X, RotateCcw, Eye, ArrowRight, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import LiveVerification from '@/components/ui/LiveVerification'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
 // ─── Liveness Detection ────────────────────────────────────
-function LivenessCheck({ onSuccess, onClose }) {
+// LivenessCheck moved to LiveVerification.jsx
   const videoRef   = useRef(null)
   const canvasRef  = useRef(null)
   const streamRef  = useRef(null)
@@ -547,7 +548,7 @@ export default function ProfilePage() {
       {/* Liveness modal */}
       <AnimatePresence>
         {showLiveness && (
-          <LivenessCheck
+          <LiveVerification
             onSuccess={handleLivenessSuccess}
             onClose={() => setShowLiveness(false)}
           />
