@@ -1,193 +1,228 @@
-# DealMatch 🏡❤️
-**Nigeria's real estate matching platform — find your perfect property like finding love.**
+# DealMatch 🏡
+
+> Nigeria's first dating-app style real estate platform. Swipe, match, and connect with your perfect property deal.
+
+**Live:** [dealmatch-yvdm.vercel.app](https://dealmatch-yvdm.vercel.app)  
+**GitHub:** [github.com/Drdriod/Dealmatch](https://github.com/Drdriod/Dealmatch)  
+**Built by:** Divine Bassey, Uyo, Akwa Ibom, Nigeria
 
 ---
 
-## What's Inside
+## What is DealMatch?
 
-DealMatch is a full-stack real estate platform where buyers swipe on AI-matched properties, and professionals (surveyors, inspectors, lenders) pay to be matched with motivated buyers.
+DealMatch is a full-stack real estate and hospitality platform for Nigeria. It combines the swipe mechanic of dating apps with AI-powered property matching, connecting buyers with properties, renters with landlords, guests with hotels, and property professionals with motivated clients.
 
-### V2 Features Added
-- ✅ **Google Maps** — property location map with nearby schools, hospitals, banks, shopping
-- ✅ **Map Explorer** — browse all listings on an interactive Nigeria map  
-- ✅ **Location Autocomplete** — Google Places search with Nigerian address suggestions
-- ✅ **Framer Motion animations** — scroll-reveal, stagger, float, slide effects throughout
-- ✅ **Animated stat counters** — numbers count up when scrolled into view
-- ✅ **Image carousel** — swipeable property photo gallery with lightbox
-- ✅ **Search palette** — Cmd+K global search with keyboard navigation
-- ✅ **WhatsApp button** — floating contact button with bounce animation
-- ✅ **Dark mode** — toggle with persistence via localStorage
-- ✅ **Match toast** — dating-style "It's a Match!" notification
-- ✅ **Video demo modal** — hero section watch demo button
-- ✅ **City browse cards** — Lagos, Abuja, Uyo, PH quick-filter
-- ✅ **Trust badges section** — verified listings, AI matching, secure payments
-- ✅ **Share button** — native share API with clipboard fallback
-- ✅ **Seller profile card** — with WhatsApp direct contact
+---
+
+## Platform Features
+
+### 🏡 Property Sales
+- Buyers set preferences (budget, location, type, goals) during onboarding
+- AI matches them to listings using Pinecone vector search
+- Swipe to like, pass, or super-like properties
+- Properties show photos, video tours, features, and documents
+- Sellers list properties in 5 steps — type → location → details → photos/video → description
+- Commission agreement built into every listing (1.5% on sale)
+
+### 🔑 Rentals & Short-lets
+- Browse rentals in grid view or swipe view
+- Filter by For Rent or Short-let
+- Interest form connects renter to landlord via WhatsApp
+- Landlords list in 6 steps with photo and video upload
+- Commission: 3% annual rental, 8% short-let per booking
+
+### 🏨 Hotels & Lodging
+- Browse hotels with filter by Luxury, Budget, Resort
+- Full booking modal — dates, guests, rooms, price calculator
+- Booking confirmation sent via WhatsApp
+- Hotels list directly on the platform
+- Commission: 8% per confirmed booking
+
+### 👤 User Roles
+| Role | Experience |
+|------|-----------|
+| Buyer | Full onboarding, AI swipe matching, matches dashboard |
+| Seller / Developer | List properties for sale, manage listings |
+| Land Surveyor | Professional listing, matched to land buyers |
+| Property Inspector | Professional listing, matched to all buyers |
+| Mortgage Lender | Professional listing, matched to financing seekers |
+
+### 💼 For Professionals
+- Surveyors: ₦25,000/month
+- Property Inspectors: ₦35,000/month
+- Mortgage Lenders: ₦75,000/month
+- Flat fee — no commission on professional subscribers
+- Unlimited deal referrals from matched buyers
+
+### 💰 Earn with DealMatch
+- Refer property deals and earn commissions
+- AMG business partnership opportunity — passive network income
+- Referral bonus: ₦2,000 per professional subscriber referred
+- Interest form sends leads directly to founder via WhatsApp
+
+---
+
+## Commission Structure
+
+| Transaction | Commission |
+|-------------|-----------|
+| Property Sale | 1.5% of final sale price |
+| Annual Rental | 3% of first year total rent |
+| Short-let Booking | 8% per confirmed booking |
+| Hotel Booking | 8% per confirmed booking |
+| Professional Subscribers | Flat monthly fee — no commission |
+
+Commission agreement checkbox required on all listing forms.
 
 ---
 
 ## Tech Stack
 
-| Tool | Purpose | Free Tier |
-|------|---------|-----------|
-| React + Vite | Frontend | ✅ |
-| Tailwind CSS | Styling | ✅ |
-| Framer Motion | Animations | ✅ |
-| @react-google-maps/api | Google Maps | ✅ $200/mo credit |
-| Supabase | Database + Auth | ✅ 500MB |
-| Pinecone | AI vector matching | ✅ 1 index |
-| Paystack | Payments (NGN) | ✅ 1.5% local |
-| Vercel | Hosting + API routes | ✅ |
-| Cloudflare | DNS + SSL | ✅ |
-| PostHog | Analytics | ✅ 1M events |
-| Sentry | Error tracking | ✅ 5K errors |
-| Resend | Emails | ✅ 100/day |
-| GitHub | Version control | ✅ |
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + Vite |
+| Styling | Tailwind CSS + Framer Motion |
+| Database | Supabase (PostgreSQL + Auth) |
+| AI Matching | Pinecone (vector embeddings) |
+| Payments | Paystack (NGN) |
+| Maps | Google Maps API + Places API |
+| Analytics | PostHog |
+| Error tracking | Sentry |
+| Email | Supabase Auth (custom SMTP via Resend) |
+| Hosting | Vercel |
+| Version Control | GitHub |
 
 ---
 
-## Project Structure
+## Database Schema
+
+Tables: `profiles`, `properties`, `property_images`, `swipes`, `matches`, `professionals`, `professional_applications`, `payments`
+
+Key property columns: `category` (sale/rental/shortlet/hotel), `price_period`, `video_url`, `contact_phone`, `contact_email`, `max_guests`, `landlord_name`, `rules`, `rating`, `review_count`
+
+---
+
+## File Structure
 
 ```
-dealmatch/
-├── src/
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── Navbar.jsx          Navbar with search palette + dark mode
-│   │   │   └── Footer.jsx
-│   │   ├── maps/
-│   │   │   └── PropertyMap.jsx     Google Maps (property + explorer + autocomplete)
-│   │   ├── matching/
-│   │   │   └── SwipeCard.jsx       Drag-to-swipe card with gestures
-│   │   └── ui/
-│   │       ├── AnimatedStat.jsx    CountUp stats on scroll
-│   │       ├── MatchToast.jsx      Dating-style match notification
-│   │       ├── PropertyCarousel.jsx Image gallery with lightbox
-│   │       ├── ScrollReveal.jsx    Framer Motion scroll animations
-│   │       ├── SearchPalette.jsx   Cmd+K command palette
-│   │       └── WhatsAppButton.jsx  Floating WhatsApp CTA
-│   ├── context/
-│   │   ├── AuthContext.jsx         Supabase auth state
-│   │   └── ThemeContext.jsx        Dark mode toggle
-│   ├── lib/
-│   │   ├── supabase.js             DB helpers (profiles, properties, swipes, matches)
-│   │   ├── pinecone.js             AI matching client
-│   │   ├── paystack.js             Payment plans + Paystack popup
-│   │   └── posthog.js              Analytics event tracking
-│   └── pages/
-│       ├── Home/HomePage.jsx       Landing page (animated, map preview, cities)
-│       ├── Auth/AuthPage.jsx       Sign up / sign in (all 5 roles)
-│       ├── Auth/AuthCallback.jsx   OAuth redirect handler
-│       ├── Onboarding/             5-step buyer preference quiz
-│       ├── Browse/BrowsePage.jsx   Swipe experience with AI matching
-│       ├── Matches/MatchesPage.jsx Liked properties list
-│       ├── Property/PropertyPage.jsx Full detail + map + carousel + share
-│       ├── Professionals/          Pro listing + Paystack payment flow
-│       ├── List/ListPropertyPage.jsx 4-step seller listing form
-│       ├── Dashboard/DashboardPage.jsx Buyer + seller stats dashboard
-│       ├── Profile/ProfilePage.jsx User profile + preferences
-│       └── Admin/AdminPage.jsx     Admin overview
-├── api/
-│   ├── match.js                    Vercel function — Pinecone AI matching
-│   ├── index-property.js           Vercel function — index new listing
-│   └── payments/verify.js          Vercel function — Paystack verification
-├── supabase-schema.sql             Full DB schema — paste into SQL Editor
-├── .env.example                    All environment variables documented
-├── vercel.json                     Deployment config with security headers
-├── tailwind.config.js              Custom colors, fonts, animations
-└── package.json                    All dependencies
+src/
+├── App.jsx                          # Routes + shell
+├── index.css                        # Global styles
+├── main.jsx
+├── components/
+│   ├── layout/
+│   │   ├── Navbar.jsx               # Buy · Rent · Hotels · Sell · For Pros · Earn
+│   │   └── Footer.jsx
+│   ├── maps/
+│   │   └── PropertyMap.jsx          # Google Maps + nearby amenities
+│   ├── matching/
+│   │   └── SwipeCard.jsx            # Drag-to-swipe matching card
+│   └── ui/
+│       ├── AnimatedStat.jsx         # CountUp on scroll
+│       ├── CommissionAgreement.jsx  # Reusable commission checkbox
+│       ├── HeroBackground.jsx       # Animated canvas background
+│       ├── MatchToast.jsx
+│       ├── PropertyCarousel.jsx
+│       ├── ScrollReveal.jsx
+│       ├── SearchPalette.jsx        # Cmd+K global search
+│       └── WhatsAppButton.jsx       # Floating WhatsApp CTA
+├── context/
+│   ├── AuthContext.jsx
+│   └── ThemeContext.jsx
+├── lib/
+│   ├── supabase.js
+│   ├── pinecone.js
+│   ├── paystack.js
+│   └── posthog.js
+└── pages/
+    ├── Admin/AdminPage.jsx
+    ├── Auth/
+    │   ├── AuthPage.jsx             # Signup (OTP) + Signin
+    │   └── AuthCallback.jsx
+    ├── Browse/BrowsePage.jsx        # AI swipe matching
+    ├── Dashboard/DashboardPage.jsx
+    ├── Earn/EarnPage.jsx            # AMG partnership + referral income
+    ├── Home/HomePage.jsx            # Landing page
+    ├── Hotels/HotelsPage.jsx        # Browse + book hotels
+    ├── List/ListPropertyPage.jsx    # 5-step sale listing with photos/video
+    ├── Matches/MatchesPage.jsx
+    ├── Onboarding/OnboardingPage.jsx # 6-step role + preference setup
+    ├── Professionals/ProfessionalsPage.jsx
+    ├── Profile/ProfilePage.jsx
+    ├── Property/PropertyPage.jsx    # Detail + map + share
+    └── Rentals/
+        ├── RentalsPage.jsx          # Browse rentals grid + swipe
+        └── ListRentalPage.jsx       # 6-step rental/hotel listing
 ```
 
 ---
 
-## Setup Guide
+## Environment Variables
 
-### Step 1 — Clone & Install
+Add these to Vercel → Project Settings → Environment Variables:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_GOOGLE_MAPS_API_KEY=AIza...
+VITE_PAYSTACK_PUBLIC_KEY=pk_live_...
+PAYSTACK_SECRET_KEY=sk_live_...
+PINECONE_API_KEY=your-pinecone-key
+PINECONE_INDEX_NAME=dealmatch-properties
+```
+
+---
+
+## Deployment
+
+**Vercel (primary):**
+- Connect GitHub repo to Vercel
+- Add environment variables
+- Deploys automatically on every push to `main`
+
+**GitHub Pages (alternative):**
+- GitHub Actions workflow in `.github/workflows/deploy.yml`
+- Go to repo Settings → Pages → Source → GitHub Actions
+- Deploys automatically on every push
+
+Vite config auto-detects the environment:
+```js
+base: process.env.GITHUB_ACTIONS ? '/Dealmatch/' : '/'
+```
+
+---
+
+## Local Development
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/dealmatch.git
-cd dealmatch
 npm install
-```
-
-### Step 2 — Environment Variables
-```bash
 cp .env.example .env.local
-# Fill in all values — see comments in .env.example
-```
-
-### Step 3 — Supabase Setup
-1. Go to [supabase.com](https://supabase.com) → New Project → name it `dealmatch`
-2. **SQL Editor** → paste entire `supabase-schema.sql` → Run
-3. **Settings → API** → copy Project URL + anon key + service_role key
-4. **Authentication → Providers** → enable Google (optional)
-
-### Step 4 — Google Maps
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create project → Enable: **Maps JavaScript API** + **Places API** + **Geocoding API**
-3. Create API key → restrict to your domain
-4. Add to `.env.local` as `VITE_GOOGLE_MAPS_API_KEY`
-
-### Step 5 — Pinecone
-1. [pinecone.io](https://pinecone.io) → Create index:
-   - Name: `dealmatch-properties`
-   - Dimensions: `1536` — Metric: `cosine`
-2. Copy API key → `PINECONE_API_KEY`
-
-### Step 6 — Paystack
-1. [paystack.com](https://paystack.com) → Settings → API Keys
-2. Public key → `VITE_PAYSTACK_PUBLIC_KEY`
-3. Secret key → `PAYSTACK_SECRET_KEY`
-
-### Step 7 — Resend, PostHog, Sentry
-Each has a free tier — create accounts and copy API keys into `.env.local`
-
-### Step 8 — Run locally
-```bash
+# Fill in your keys
 npm run dev
-# → http://localhost:3000
 ```
-
-### Step 9 — Deploy to Vercel
-```bash
-git add .
-git commit -m "DealMatch v2 — Google Maps + modern UI"
-git push origin main
-```
-Then import repo on [vercel.com](https://vercel.com) and add all env vars.
-
-### Step 10 — Connect Cloudflare DNS
-Point your domain to Vercel via Cloudflare — free SSL + CDN + DDoS protection.
 
 ---
 
 ## Revenue Model
 
-| Professional | Monthly | Annual (save 20%) |
-|-------------|---------|-------------------|
-| Land Surveyor | ₦25,000 | ₦240,000 |
-| Property Inspector | ₦35,000 | ₦336,000 |
-| Mortgage Lender | ₦75,000 | ₦720,000 |
-
-**At 10 professionals per type → ₦1.35M/month MRR**
-
----
-
-## WhatsApp Number
-Update the number in `src/components/ui/WhatsAppButton.jsx`:
-```js
-const WHATSAPP_NUMBER = '2348000000000' // Replace with yours
-```
+| Stream | How |
+|--------|-----|
+| Property sale commission | 1.5% on close |
+| Rental commission | 3% first year |
+| Short-let commission | 8% per booking |
+| Hotel commission | 8% per booking |
+| Professional subscriptions | ₦25k–₦75k/month |
+| AMG partnership referrals | Passive network income |
 
 ---
 
-## Roadmap
-- [ ] Real embeddings (OpenAI text-embedding-3-small)
-- [ ] In-app messaging between buyers and professionals  
-- [ ] LandVerify title verification integration
-- [ ] Push notifications (PWA)
-- [ ] Mobile app (React Native / Expo)
-- [ ] Stripe for international buyers
+## Contact
+
+**Divine Bassey**  
+Founder & CEO — DealMatch  
+📍 Uyo, Akwa Ibom, Nigeria  
+📱 WhatsApp: +234 705 739 2060  
 
 ---
 
-Built with ❤️ by DealMatch · Powered by Supabase + Pinecone + Paystack
+*Built with ❤️ for the Nigerian property market.*
