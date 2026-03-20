@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
 const REQUIREMENTS = {
@@ -12,28 +13,46 @@ const REQUIREMENTS = {
 }
 
 export function useVerificationGuard() {
-  const { profile } = useAuth()
-  const navigate    = useNavigate()
+  const { user, profile } = useAuth()
+  const navigate = useNavigate()
 
-  const check = (action) => {
+  // Async check — fetches fresh from Supabase every time
+  const checkAsync = async (action) => {
     const req = REQUIREMENTS[action]
     if (!req) return true
+    if (!user) { navigate('/auth'); return false }
 
-    const hasPhoto = !!profile?.avatar_url
-    const hasLive  = !!profile?.is_live_verified
+    // Always fetch fresh profile data
+    const { data: freshProfile } = await supabase
+      .from('profiles')
+      .select('avatar_url, is_photo_verified, is_live_verified')
+      .eq('id', user.id)
+      .single()
+
+    const hasPhoto = !!(freshProfile?.avatar_url)
+    const hasLive  = !!(freshProfile?.is_live_verified)
 
     if (req.live && !hasLive) {
       if (!hasPhoto) {
-        toast.error(`Upload your photo + complete face verification to ${req.label}.`, { duration: 4000, icon: '🔒' })
+        toast.error(
+          '🔒 You need to upload a photo AND complete live face verification to ' + req.label + '. Go to your profile.',
+          { duration: 5000 }
+        )
       } else {
-        toast.error(`Complete the Live face check on your profile to ${req.label}.`, { duration: 4000, icon: '🟢' })
+        toast.error(
+          '🟢 You need to complete the Live face check to ' + req.label + '. Go to your profile.',
+          { duration: 5000 }
+        )
       }
       navigate('/profile')
       return false
     }
 
     if (req.photo && !hasPhoto) {
-      toast.error(`Upload a profile photo to ${req.label}.`, { duration: 4000, icon: '📸' })
+      toast.error(
+        '📸 Upload a profile photo to ' + req.label + '. Go to your profile.',
+        { duration: 5000 }
+      )
       navigate('/profile')
       return false
     }
@@ -41,5 +60,42 @@ export function useVerificationGuard() {
     return true
   }
 
-  return { check }
+  // Sync check using cached profile (for quick UI checks)
+  const check = (action) => {
+    const req = REQUIREMENTS[action]
+    if (!req) return true
+    if (!user) { navigate('/auth'); return false }
+
+    const hasPhoto = !!(profile?.avatar_url)
+    const hasLive  = !!(profile?.is_live_verified)
+
+    if (req.live && !hasLive) {
+      if (!hasPhoto) {
+        toast.error(
+          '🔒 Upload your photo + complete face verification to ' + req.label,
+          { duration: 5000 }
+        )
+      } else {
+        toast.error(
+          '🟢 Complete the Live face check on your profile to ' + req.label,
+          { duration: 5000 }
+        )
+      }
+      navigate('/profile')
+      return false
+    }
+
+    if (req.photo && !hasPhoto) {
+      toast.error(
+        '📸 Upload a profile photo to ' + req.label,
+        { duration: 5000 }
+      )
+      navigate('/profile')
+      return false
+    }
+
+    return true
+  }
+
+  return { check, checkAsync }
 }
