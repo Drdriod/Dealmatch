@@ -3,6 +3,7 @@ import { SlidersHorizontal, RefreshCw } from 'lucide-react'
 import SwipeCard from '@/components/matching/SwipeCard'
 import { getProperties } from '@/lib/supabase'
 import { getAIMatches, explainMatchScore } from '@/lib/pinecone'
+import { useVerificationGuard } from '@/hooks/useVerificationGuard'
 import { useAuth } from '@/context/AuthContext'
 import clsx from 'clsx'
 
