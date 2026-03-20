@@ -378,6 +378,7 @@ export default function ProfilePage() {
     if (error) { toast.error('Could not save profile'); return }
     await refreshProfile()
     toast.success('Profile saved!')
+    setTimeout(() => navigate('/browse'), 1000)
   }
 
   const STATES = [
