@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { createProperty } from '@/lib/supabase'
 import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
+import CommissionAgreement from '@/components/ui/CommissionAgreement'
 import clsx from 'clsx'
 
 const LISTING_CATEGORIES = [
@@ -39,6 +40,7 @@ export default function ListRentalPage() {
   const navigate  = useNavigate()
   const [step, setStep]     = useState(0)
   const [saving, setSaving] = useState(false)
+  const [agreed, setAgreed] = useState(false)
   const [form, setForm]     = useState(INITIAL)
 
   const set     = (k, v) => setForm(f => ({...f, [k]: v}))
@@ -355,6 +357,7 @@ export default function ListRentalPage() {
   }
 
   const handleSubmit = async () => {
+    if (!agreed) { toast.error('Please agree to the commission terms to publish'); return }
     setSaving(true)
     const payload = {
       title:         form.title,
@@ -402,6 +405,11 @@ export default function ListRentalPage() {
         {/* Content */}
         <div>{current.content}</div>
 
+        {/* Commission Agreement */}
+        <div className="mt-6">
+          <CommissionAgreement category={form.category || 'rental'} agreed={agreed} onChange={setAgreed} />
+        </div>
+
         {/* Navigation */}
         <div className="flex gap-3 mt-8">
           {step > 0 && (
@@ -422,3 +430,4 @@ export default function ListRentalPage() {
     </div>
   )
 }
+// Commission patch applied via append - see CommissionAgreement component
