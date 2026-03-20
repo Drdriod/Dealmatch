@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   GoogleMap,
   useJsApiLoader,
@@ -223,6 +224,7 @@ export function PropertyMap({ property, height = '360px' }) {
 // ─── Map Explorer — all listings ─────────────────────────
 export function MapExplorer({ properties = [], onSelectProperty }) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  const navigate = useNavigate()
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: apiKey || '',
@@ -284,11 +286,17 @@ export function MapExplorer({ properties = [], onSelectProperty }) {
             onCloseClick={() => setSelected(null)}
           >
             <div className="p-2 max-w-[200px] cursor-pointer"
-              onClick={() => { onSelectProperty?.(selected); setSelected(null) }}>
+              onClick={() => {
+                onSelectProperty?.(selected)
+                setSelected(null)
+                if (selected.id) navigate(`/property/${selected.id}`)
+              }}>
               <p className="font-bold text-deep text-sm leading-tight">{selected.title}</p>
               <p className="text-terracotta font-black text-base mt-1">{formatPrice(selected.price)}</p>
               <p className="text-xs text-deep/50 mt-0.5">{selected.city}, {selected.state}</p>
-              <p className="text-xs text-terracotta font-semibold mt-1.5">View property →</p>
+              <div className="mt-2 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{backgroundColor:"#C96A3A", color:"#FFFFFF", display:"inline-flex"}}>
+                View Property →
+              </div>
             </div>
           </InfoWindow>
         )}
