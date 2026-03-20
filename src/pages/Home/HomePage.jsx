@@ -181,13 +181,13 @@ export default function HomePage() {
             <h2 className="section-title mb-4">Dating for deals.<br /><em className="text-terracotta">Seriously.</em></h2>
             <p className="section-sub mx-auto text-center">We took everything frustrating about property hunting and made it feel like falling in love.</p>
           </FadeUp>
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8" stagger={0.15}>
+          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6" stagger={0.15}>
             {STEPS.map(s => (
               <StaggerItem key={s.num}>
                 <div className="group rounded-3xl p-8 relative overflow-hidden hover:shadow-card transition-all duration-300 hover:-translate-y-2 border border-[#E8DDD2]" style={{backgroundColor:"#FFFAF5"}}>
                   <div className="font-display text-[7rem] font-black absolute -top-4 -right-3 leading-none pointer-events-none select-none" style={{color:"rgba(201,106,58,0.08)"}}>{s.num}</div>
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform shadow-sm" style={{backgroundColor:"#FFFFFF"}}>{s.icon}</div>
-                  <h3 className="font-display text-2xl font-black mb-3 text-[#1A1210]">{s.title}</h3>
+                  <h3 className="font-display text-xl font-black mb-3 leading-tight" style={{color:"#1A1210"}}>{s.title}</h3>
                   <p className="text-[#5C4A3A] text-sm leading-[1.8] tracking-wide">{s.desc}</p>
                 </div>
               </StaggerItem>
