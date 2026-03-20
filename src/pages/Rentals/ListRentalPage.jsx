@@ -32,7 +32,7 @@ const INITIAL = {
   state:'', city:'', address:'', price:'', price_period:'month',
   bedrooms:'', bathrooms:'', max_guests:'',
   amenities:[], rules:'', contact_phone:'', contact_email:'',
-  images:[], video_url:'',
+  images:[], video_url:'', custom_terms:'',
 }
 
 export default function ListRentalPage() {
