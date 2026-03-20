@@ -16,7 +16,7 @@ const ROLES = [
   { id:'lender',    label:'Mortgage Lender',    emoji:'🏦', desc:'Offering financing and mortgage services' },
 ]
 
-const STATES = ['Akwa Ibom','Lagos','Abuja (FCT)','Rivers','Delta','Ogun','Kano','Oyo','Enugu','Anambra','Cross River','Imo','Edo','Kaduna','Plateau']
+const STATES = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','Abuja (FCT)']
 
 const PROPERTY_TYPES = [
   { id:'land',       label:'Land / Plot',   emoji:'🌿' },
