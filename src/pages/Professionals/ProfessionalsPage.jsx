@@ -1,294 +1,488 @@
 import { useState } from 'react'
-import { Check, Star, Shield, Users, TrendingUp } from 'lucide-react'
-import { PROFESSIONAL_PLANS, subscribeProfessional, formatNaira } from '@/lib/paystack'
-import { createProfessionalApplication } from '@/lib/supabase'
-import { analytics } from '@/lib/posthog'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, X, ArrowRight, Star, Shield, Users, TrendingUp } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
-import clsx from 'clsx'
 
-const PRO_CONFIG = [
+const WHATSAPP = '2347057392060'
+
+const PROFESSIONALS = [
   {
-    type: 'surveyor',
-    emoji: '📐',
-    color: 'sage',
-    bg: 'rgba(122,158,126,0.1)',
-    title: 'Land Surveyor',
-    headline: 'Get matched with land buyers automatically',
-    desc: 'Stop chasing cold leads. When a buyer likes a land property, we connect them with you instantly.',
-    stats: [{ icon: '📋', label: 'Avg. referrals/month', value: '22' }, { icon: '✅', label: 'Verified listings required', value: 'Yes' }],
+    id:       'surveyor',
+    emoji:    '📐',
+    title:    'Land Surveyor',
+    desc:     'Verify land boundaries, produce survey plans, confirm titles',
+    price:    25000,
+    badge:    'Most Listed',
+    features: ['Matched to land & plot buyers', 'Boundary dispute cases', 'Survey plan requests', 'Title verification jobs'],
+    color:    '#7A9E7E',
   },
   {
-    type: 'inspector',
-    emoji: '🔍',
-    color: 'terracotta',
-    bg: 'rgba(201,106,58,0.08)',
-    title: 'Property Inspector',
-    headline: 'Serious buyers. Zero cold outreach.',
-    desc: 'Buyers who just matched a property need an inspection. You get the lead at the exact moment intent is highest.',
-    stats: [{ icon: '🔥', label: 'Avg. referrals/month', value: '35' }, { icon: '⭐', label: 'Featured placement', value: 'Yes' }],
-    popular: true,
+    id:       'inspector',
+    emoji:    '🔍',
+    title:    'Property Inspector',
+    desc:     'Inspect buildings for structural integrity and defects',
+    price:    35000,
+    badge:    'Most Popular',
+    hot:      true,
+    features: ['Unlimited buyer referrals', 'Pre-purchase inspections', 'Rental property checks', 'Post-construction reports'],
+    color:    '#C96A3A',
   },
   {
-    type: 'lender',
-    emoji: '🏦',
-    color: 'gold',
-    bg: 'rgba(212,168,83,0.1)',
-    title: 'Mortgage Lender',
-    headline: 'Pre-qualified leads at the moment they need you',
-    desc: 'Buyers with an accepted offer need financing fast. We send them to you — no competition, no cold traffic.',
-    stats: [{ icon: '💰', label: 'Avg. loan size referred', value: '₦32M' }, { icon: '📊', label: 'Buyer financial profile', value: 'Included' }],
+    id:       'valuer',
+    emoji:    '⚖️',
+    title:    'Property Valuer',
+    desc:     'Provide certified property valuations for sales and mortgages',
+    price:    30000,
+    badge:    'High Demand',
+    features: ['Bank valuation requests', 'Insurance valuations', 'Sale price guidance', 'Estate valuations'],
+    color:    '#D4A853',
+  },
+  {
+    id:       'lawyer',
+    emoji:    '⚖️',
+    title:    'Real Estate Lawyer',
+    desc:     'Handle title searches, deed of assignment, C of O processing',
+    price:    45000,
+    badge:    'Essential',
+    features: ['Title search requests', 'Deed of assignment', 'C of O processing', 'Tenancy agreements'],
+    color:    '#5C4A3A',
+  },
+  {
+    id:       'lender',
+    emoji:    '🏦',
+    title:    'Mortgage Lender',
+    desc:     'Provide home loans and mortgage financing to qualified buyers',
+    price:    75000,
+    badge:    'Premium',
+    features: ['Pre-qualified buyer leads', 'Home loan requests', 'NHF mortgage cases', 'Commercial property loans'],
+    color:    '#1A1210',
+  },
+  {
+    id:       'architect',
+    emoji:    '📏',
+    title:    'Architect',
+    desc:     'Design building plans, renovation projects, structural designs',
+    price:    30000,
+    badge:    null,
+    features: ['New build design requests', 'Renovation plans', 'Building approvals', 'Structural drawings'],
+    color:    '#8A7E78',
+  },
+  {
+    id:       'agent',
+    emoji:    '🤝',
+    title:    'Estate Agent',
+    desc:     'Help buyers and sellers close property deals professionally',
+    price:    20000,
+    badge:    'Entry Level',
+    features: ['Buyer-seller matching', 'Property viewings', 'Negotiation support', 'Deal closing assistance'],
+    color:    '#7A9E7E',
+  },
+  {
+    id:       'contractor',
+    emoji:    '🏗️',
+    title:    'Building Contractor',
+    desc:     'Construction, renovation, and property development services',
+    price:    25000,
+    badge:    null,
+    features: ['New construction leads', 'Renovation projects', 'Finishing jobs', 'Development contracts'],
+    color:    '#8A7E78',
   },
 ]
 
-// ─── Application modal ─────────────────────────────────────
-function ApplyModal({ pro, onClose }) {
-  const { user } = useAuth()
-  const [plan, setPlan]       = useState('monthly')
-  const [step, setStep]       = useState('form') // 'form' | 'pay'
-  const [saving, setSaving]   = useState(false)
-  const [form, setForm]       = useState({
-    full_name: '', email: user?.email || '', phone: '',
-    coverage_areas: '', license_number: '', company_name: '',
+const STATS = [
+  { value:'840+', label:'Active Professionals' },
+  { value:'12k+', label:'Buyer Connections' },
+  { value:'₦2.3B', label:'Deals Facilitated' },
+  { value:'4.8★', label:'Average Rating' },
+]
+
+// ─── Application Modal ─────────────────────────────────────
+function ApplicationModal({ professional, onClose }) {
+  const { user, profile } = useAuth()
+  const [step, setStep]   = useState('form') // form | payment | success
+  const [form, setForm]   = useState({
+    full_name:    profile?.full_name || '',
+    company:      '',
+    phone:        profile?.phone || '',
+    email:        user?.email || '',
+    license_no:   '',
+    years_exp:    '',
+    coverage:     '',
+    bio:          '',
   })
+  const [submitting, setSubmitting] = useState(false)
+  const set = (k) => (e) => setForm(f => ({...f, [k]: e.target.value}))
 
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
-  const planData = PROFESSIONAL_PLANS[pro.type]
-  const amount   = plan === 'annual' ? planData.annualFee : planData.monthlyFee
-
-  const handleSubmit = async (e) => {
+  const handleApply = async (e) => {
     e.preventDefault()
-    if (!form.full_name || !form.email || !form.phone) return toast.error('Please fill required fields')
-    setSaving(true)
-    const { error } = await createProfessionalApplication({
-      ...form,
-      professional_type: pro.type,
-      user_id: user?.id,
-      plan_type: plan,
-      status: 'pending',
+    if (!form.full_name || !form.phone || !form.email) {
+      toast.error('Please fill all required fields')
+      return
+    }
+    setSubmitting(true)
+
+    const { error } = await supabase.from('professional_applications').insert({
+      user_id:       user?.id,
+      type:          professional.id,
+      full_name:     form.full_name,
+      company:       form.company,
+      phone:         form.phone,
+      email:         form.email,
+      license_no:    form.license_no,
+      years_exp:     form.years_exp,
+      coverage_areas:form.coverage,
+      bio:           form.bio,
+      monthly_fee:   professional.price,
+      status:        'pending_payment',
+      created_at:    new Date().toISOString(),
     })
-    setSaving(false)
-    if (error) return toast.error('Could not submit. Please try again.')
-    setStep('pay')
+
+    setSubmitting(false)
+    if (error) { toast.error('Could not submit application'); return }
+    analytics.professionalApplied(professional.id)
+    setStep('payment')
   }
 
-  const handlePayment = () => {
-    analytics.subscriptionStarted(pro.type, plan)
-    subscribeProfessional({
-      professional: { ...form, professional_type: pro.type, id: 'pending' },
-      planType: plan,
-      onSuccess: (res) => {
-        analytics.subscriptionCompleted(pro.type, plan, amount)
-        toast.success('Payment confirmed! Your profile will be live within 24 hours. 🎉')
-        onClose()
-      },
-      onClose: () => toast('Payment cancelled'),
-    })
+  const handlePaystack = () => {
+    // Notify DealMatch via WhatsApp
+    const msg = encodeURIComponent(
+      `💼 *New Professional Application — DealMatch*\n\n` +
+      `Type: *${professional.title}*\n` +
+      `Name: ${form.full_name}\n` +
+      `Company: ${form.company || 'Individual'}\n` +
+      `Phone: ${form.phone}\n` +
+      `Email: ${form.email}\n` +
+      `License: ${form.license_no || 'Not provided'}\n` +
+      `Experience: ${form.years_exp} years\n` +
+      `Coverage: ${form.coverage}\n\n` +
+      `Monthly Fee: ₦${professional.price.toLocaleString()}\n\n` +
+      `Please process payment and activate their listing.`
+    )
+    window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank')
+    setStep('success')
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-deep/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-        <div className="p-6 border-b border-deep/8 flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-2xl font-black">{pro.emoji} Join as {pro.title}</h2>
-            <p className="text-sm text-deep/40 mt-0.5">Get matched with motivated buyers</p>
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4"
+      style={{backgroundColor:'rgba(26,18,16,0.8)', backdropFilter:'blur(8px)'}}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{opacity:0,y:40}} animate={{opacity:1,y:0}}
+        className="w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
+        style={{backgroundColor:'#FFFAF5', maxHeight:'90vh'}}>
+
+        {/* Header */}
+        <div className="p-5 border-b flex items-center justify-between flex-shrink-0"
+          style={{borderColor:'#E8DDD2'}}>
+          <div className="flex items-center gap-3">
+            <div className="text-3xl">{professional.emoji}</div>
+            <div>
+              <h3 className="font-display text-lg font-black" style={{color:'#1A1210'}}>
+                Join as {professional.title}
+              </h3>
+              <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>
+                ₦{professional.price.toLocaleString()}/month
+              </p>
+            </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-deep/5 hover:bg-deep/10 flex items-center justify-center text-deep/40 transition-colors">✕</button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{backgroundColor:'rgba(26,18,16,0.08)'}}>
+            <X size={14} style={{color:'#5C4A3A'}} />
+          </button>
         </div>
 
-        <div className="p-6">
-          {step === 'form' ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Plan selector */}
-              <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-3 block">Choose Plan</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[['monthly','Monthly', planData.monthlyFee],['annual','Annual (Save 20%)', planData.annualFee]].map(([v,l,price]) => (
-                    <button key={v} type="button" onClick={() => setPlan(v)}
-                      className={clsx('p-3 rounded-2xl border-2 text-left transition-all',
-                        plan === v ? 'border-terracotta bg-terracotta/5' : 'border-deep/8'
-                      )}>
-                      <p className="text-xs font-bold text-deep">{l}</p>
-                      <p className="font-display font-black text-terracotta mt-1">{formatNaira(price)}</p>
-                    </button>
-                  ))}
+        <div className="overflow-y-auto flex-1">
+
+          {step === 'form' && (
+            <form onSubmit={handleApply} className="p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Full Name *</label>
+                  <input className="input text-sm" type="text" placeholder="John Doe"
+                    value={form.full_name} onChange={set('full_name')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Company / Firm</label>
+                  <input className="input text-sm" type="text" placeholder="Optional"
+                    value={form.company} onChange={set('company')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
                 </div>
               </div>
-
-              <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2 block">Full Name / Company *</label>
-                <input className="input" type="text" placeholder="e.g. Biodun Survey Associates" value={form.full_name} onChange={set('full_name')} required />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Phone *</label>
+                  <input className="input text-sm" type="tel" placeholder="+234 800 000 0000"
+                    value={form.phone} onChange={set('phone')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Email *</label>
+                  <input className="input text-sm" type="email" placeholder="you@example.com"
+                    value={form.email} onChange={set('email')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>License / Reg. No.</label>
+                  <input className="input text-sm" type="text" placeholder="Optional"
+                    value={form.license_no} onChange={set('license_no')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Years Experience</label>
+                  <input className="input text-sm" type="number" min="0" placeholder="e.g. 5"
+                    value={form.years_exp} onChange={set('years_exp')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2 block">Email *</label>
-                <input className="input" type="email" placeholder="you@example.com" value={form.email} onChange={set('email')} required />
+                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Coverage Areas *</label>
+                <input className="input text-sm" type="text" placeholder="e.g. Lagos, Abuja, Uyo"
+                  value={form.coverage} onChange={set('coverage')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
               </div>
               <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2 block">Phone *</label>
-                <input className="input" type="tel" placeholder="+234 800 000 0000" value={form.phone} onChange={set('phone')} required />
+                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>Professional Bio</label>
+                <textarea className="input resize-none text-sm" rows={3}
+                  placeholder="Briefly describe your experience and what you offer..."
+                  value={form.bio} onChange={set('bio')} style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
               </div>
-              <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2 block">Coverage Areas</label>
-                <input className="input" type="text" placeholder="e.g. Lagos, Abuja, Uyo" value={form.coverage_areas} onChange={set('coverage_areas')} />
+              <div className="p-4 rounded-2xl" style={{backgroundColor:'rgba(201,106,58,0.06)', border:'1px solid rgba(201,106,58,0.2)'}}>
+                <p className="text-xs font-bold mb-1" style={{color:'#C96A3A'}}>Monthly Subscription</p>
+                <p className="font-display font-black text-2xl" style={{color:'#1A1210'}}>
+                  ₦{professional.price.toLocaleString()}<span className="text-sm font-normal" style={{color:'#8A7E78'}}>/month</span>
+                </p>
+                <p className="text-xs mt-1" style={{color:'#8A7E78'}}>
+                  Your listing goes live within 24 hours after payment verification.
+                </p>
               </div>
-              <div>
-                <label className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2 block">License / Certification Number</label>
-                <input className="input" type="text" placeholder="e.g. SURCON-12345" value={form.license_number} onChange={set('license_number')} />
-              </div>
-
-              <button type="submit" disabled={saving} className="btn-primary w-full py-4 text-base mt-2">
-                {saving ? 'Submitting...' : 'Continue to Payment →'}
+              <button type="submit" disabled={submitting} className="btn-primary w-full py-4">
+                {submitting ? 'Submitting...' : 'Submit Application →'}
               </button>
-              <p className="text-xs text-deep/30 text-center">Your listing goes live within 24 hours after payment and verification.</p>
             </form>
-          ) : (
-            <div className="text-center space-y-6 py-4">
-              <div className="w-16 h-16 rounded-full bg-sage/15 flex items-center justify-center text-3xl mx-auto">✅</div>
-              <div>
-                <h3 className="font-display text-2xl font-black mb-2">Application received!</h3>
-                <p className="text-deep/40 text-sm leading-relaxed">Complete payment to activate your listing. You'll receive a confirmation email and your profile will go live within 24 hours.</p>
+          )}
+
+          {step === 'payment' && (
+            <div className="p-5">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-3">💳</div>
+                <h4 className="font-display font-black text-xl mb-2" style={{color:'#1A1210'}}>Complete Payment</h4>
+                <p className="text-sm" style={{color:'#8A7E78'}}>
+                  Your application is submitted. Complete your monthly subscription payment to go live.
+                </p>
               </div>
-              <div className="bg-cream rounded-2xl p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-deep/50">{pro.title} Listing</span>
-                  <span className="font-semibold capitalize">{plan}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-deep">Total</span>
-                  <span className="font-display font-black text-terracotta text-lg">{formatNaira(amount)}</span>
-                </div>
+              <div className="p-4 rounded-2xl mb-5 text-center"
+                style={{backgroundColor:'rgba(201,106,58,0.06)', border:'1px solid rgba(201,106,58,0.15)'}}>
+                <p className="text-xs uppercase tracking-wider mb-1" style={{color:'#8A7E78'}}>Amount Due</p>
+                <p className="font-display font-black text-3xl" style={{color:'#C96A3A'}}>
+                  ₦{professional.price.toLocaleString()}
+                </p>
+                <p className="text-xs mt-1" style={{color:'#8A7E78'}}>First month subscription</p>
               </div>
-              <button onClick={handlePayment} className="btn-primary w-full py-4 text-base">
-                Pay {formatNaira(amount)} with Paystack →
+              <button onClick={handlePaystack} className="btn-primary w-full py-4 mb-3">
+                Pay via WhatsApp / Transfer →
               </button>
-              <p className="text-xs text-deep/30">Secured by Paystack · Cancel anytime</p>
+              <p className="text-xs text-center" style={{color:'#8A7E78'}}>
+                DealMatch will send payment details via WhatsApp and activate your listing within 24 hours.
+              </p>
+            </div>
+          )}
+
+          {step === 'success' && (
+            <div className="p-8 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h4 className="font-display font-black text-2xl mb-2" style={{color:'#1A1210'}}>Application Received!</h4>
+              <p className="text-sm leading-relaxed mb-6" style={{color:'#8A7E78'}}>
+                DealMatch will contact you on WhatsApp within 24 hours to complete payment and activate your professional listing.
+              </p>
+              <button onClick={onClose} className="btn-primary w-full py-4">Done</button>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
 
-// ─── Main page ─────────────────────────────────────────────
-export default function ProfessionalsPage() {
-  const [applying, setApplying] = useState(null) // pro config object
-
+// ─── Professional Card ─────────────────────────────────────
+function ProfCard({ pro, onApply }) {
   return (
-    <div className="min-h-screen bg-cream">
-      {/* Hero */}
-      <div className="bg-deep pt-32 pb-20 px-6 relative overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,106,58,0.15) 0%, transparent 60%)' }} />
-        <div className="max-w-3xl mx-auto text-center relative">
-          <div className="badge bg-terracotta/20 text-terracotta mb-6 mx-auto w-fit">For Professionals</div>
-          <h1 className="font-display text-5xl md:text-6xl font-black text-white leading-tight mb-6">
-            Stop chasing leads.<br /><em className="text-terracotta">Get matched to them.</em>
-          </h1>
-          <p className="text-white/50 text-lg max-w-xl mx-auto leading-relaxed">
-            Buyers on DealMatch are already in love with a property. They need a surveyor, inspector, or lender — we send them straight to you.
-          </p>
+    <motion.div whileHover={{y:-4}}
+      className="rounded-3xl overflow-hidden border transition-all"
+      style={{
+        backgroundColor: pro.hot ? '#1A1210' : '#FFFAF5',
+        borderColor: pro.hot ? 'transparent' : '#E8DDD2',
+        boxShadow: pro.hot ? '0 20px 60px rgba(201,106,58,0.3)' : '0 4px 20px rgba(26,18,16,0.06)',
+      }}>
+      <div className="p-6">
+        {/* Badge */}
+        {pro.badge && (
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-4"
+            style={{
+              backgroundColor: pro.hot ? 'rgba(201,106,58,0.3)' : `${pro.color}15`,
+              color: pro.hot ? '#FFFFFF' : pro.color,
+            }}>
+            {pro.hot ? '🔥' : '⭐'} {pro.badge}
+          </div>
+        )}
+
+        {/* Icon + title */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="text-4xl">{pro.emoji}</div>
+          <div>
+            <h3 className="font-display font-black text-lg leading-tight"
+              style={{color: pro.hot ? '#FFFFFF' : '#1A1210'}}>
+              {pro.title}
+            </h3>
+            <p className="text-xs mt-0.5" style={{color: pro.hot ? 'rgba(255,255,255,0.5)' : '#8A7E78'}}>
+              {pro.desc}
+            </p>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="max-w-2xl mx-auto mt-12 grid grid-cols-3 gap-4 relative">
-          {[['840+','Professionals Listed'],['12,400+','Active Buyers'],['₦2.3B','Deals Facilitated']].map(([v,l]) => (
-            <div key={l} className="text-center">
-              <p className="font-display text-3xl font-black text-blush">{v}</p>
-              <p className="text-white/30 text-xs mt-1">{l}</p>
+        {/* Features */}
+        <div className="space-y-1.5 mb-5">
+          {pro.features.map(f => (
+            <div key={f} className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{backgroundColor: pro.hot ? 'rgba(255,255,255,0.15)' : `${pro.color}15`}}>
+                <Check size={9} style={{color: pro.hot ? '#FFFFFF' : pro.color}} />
+              </div>
+              <p className="text-xs" style={{color: pro.hot ? 'rgba(255,255,255,0.65)' : '#8A7E78'}}>
+                {f}
+              </p>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Cards */}
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-14">
-          <p className="section-tag">Listing Plans</p>
-          <h2 className="section-title mb-4">Choose your <em className="text-terracotta">professional plan</em></h2>
-          <p className="section-sub mx-auto text-center">One flat monthly fee. Unlimited exposure to motivated, pre-matched buyers.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {PRO_CONFIG.map((pro) => {
-            const plan = PROFESSIONAL_PLANS[pro.type]
-            return (
-              <div key={pro.type}
-                className={clsx('bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-card-hover relative',
-                  pro.popular ? 'shadow-card-hover ring-2 ring-terracotta' : 'shadow-card'
-                )}>
-                {pro.popular && (
-                  <div className="absolute top-5 right-5 bg-terracotta text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    Most Popular
-                  </div>
-                )}
-
-                {/* Header */}
-                <div className="p-7 pb-5" style={{ background: pro.bg }}>
-                  <div className="text-4xl mb-4">{pro.emoji}</div>
-                  <h3 className="font-display text-2xl font-black mb-2">{pro.title}</h3>
-                  <p className="text-deep/50 text-sm leading-relaxed">{pro.desc}</p>
-                </div>
-
-                {/* Pricing */}
-                <div className="px-7 py-5 border-t border-deep/5">
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="font-display text-3xl font-black text-deep">{formatNaira(plan.monthlyFee)}</span>
-                    <span className="text-deep/30 text-sm">/ month</span>
-                  </div>
-                  <p className="text-xs text-deep/30">{formatNaira(plan.annualFee)} billed annually (save 20%)</p>
-                </div>
-
-                {/* Features */}
-                <div className="px-7 pb-6">
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map(f => (
-                      <li key={f} className="flex items-start gap-3 text-sm text-charcoal">
-                        <div className="w-5 h-5 rounded-full bg-sage/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check size={11} className="text-sage" />
-                        </div>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button onClick={() => setApplying(pro)}
-                    className={clsx('w-full py-4 rounded-2xl text-sm font-bold transition-all',
-                      pro.popular
-                        ? 'btn-primary'
-                        : 'border-2 border-deep/10 hover:border-terracotta hover:text-terracotta text-deep/60'
-                    )}>
-                    Join as {pro.title} →
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+        {/* Price + CTA */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-display font-black text-2xl"
+              style={{color: pro.hot ? '#FFFFFF' : '#C96A3A'}}>
+              ₦{pro.price.toLocaleString()}
+            </p>
+            <p className="text-xs" style={{color: pro.hot ? 'rgba(255,255,255,0.4)' : '#8A7E78'}}>/month</p>
+          </div>
+          <button onClick={() => onApply(pro)}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all"
+            style={{
+              backgroundColor: pro.hot ? '#C96A3A' : '#1A1210',
+              color: '#FFFFFF',
+              boxShadow: pro.hot ? '0 8px 24px rgba(201,106,58,0.5)' : 'none',
+            }}>
+            Apply <ArrowRight size={14} />
+          </button>
         </div>
       </div>
+    </motion.div>
+  )
+}
 
-      {/* Trust section */}
-      <div className="bg-white py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="font-display text-3xl font-black mb-10">Why professionals choose DealMatch</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: <Shield size={24} className="text-sage" />, title: 'Verified buyers only', desc: 'Every buyer completes an onboarding profile. No time-wasters.' },
-              { icon: <TrendingUp size={24} className="text-terracotta" />, title: 'Intent-matched leads', desc: 'Leads arrive at the moment they need you — not before, not after.' },
-              { icon: <Users size={24} className="text-gold" />, title: 'Full control', desc: 'Manage your coverage areas, availability, and profile from your dashboard.' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="flex flex-col items-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center">{icon}</div>
-                <h4 className="font-semibold text-deep">{title}</h4>
-                <p className="text-deep/40 text-sm leading-relaxed">{desc}</p>
+// ─── Main Page ─────────────────────────────────────────────
+export default function ProfessionalsPage() {
+  const [selected, setSelected] = useState(null)
+
+  return (
+    <div className="min-h-screen pt-20" style={{backgroundColor:'#F5EDE0'}}>
+
+      {/* Hero */}
+      <section className="py-20 px-6 relative overflow-hidden" style={{backgroundColor:'#1A1210'}}>
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background:'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(201,106,58,0.2) 0%, transparent 60%)'
+        }} />
+        <div className="max-w-4xl mx-auto relative text-center">
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{color:'rgba(255,255,255,0.4)'}}>
+            For Professionals
+          </p>
+          <h1 className="font-display font-black mb-4" style={{
+            fontSize:'clamp(2.5rem, 6vw, 4rem)', color:'#FFFFFF', lineHeight:1.1
+          }}>
+            Get matched with<br /><em style={{color:'#C96A3A'}}>motivated clients.</em>
+          </h1>
+          <p className="text-lg mb-10 max-w-2xl mx-auto" style={{color:'rgba(255,255,255,0.5)'}}>
+            Stop chasing cold leads. DealMatch sends you clients who are already in the middle of a property transaction and need exactly your service.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            {STATS.map(s => (
+              <div key={s.label} className="text-center">
+                <p className="font-display font-black text-3xl" style={{color:'#C96A3A'}}>{s.value}</p>
+                <p className="text-xs mt-1" style={{color:'rgba(255,255,255,0.4)'}}>{s.label}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Apply modal */}
-      {applying && <ApplyModal pro={applying} onClose={() => setApplying(null)} />}
+      {/* How it works */}
+      <section className="py-16 px-6" style={{backgroundColor:'#FFFAF5'}}>
+        <div className="max-w-4xl mx-auto">
+          <h2 className="font-display font-black text-3xl text-center mb-10" style={{color:'#1A1210'}}>
+            How it works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { num:'01', icon:'📋', title:'Apply & Pay', desc:'Submit your professional details and pay the monthly subscription fee.' },
+              { num:'02', icon:'✅', title:'Get Verified', desc:'DealMatch verifies your credentials and activates your listing within 24 hours.' },
+              { num:'03', icon:'💼', title:'Receive Clients', desc:'Buyers, sellers and landlords who need your service are matched directly to you.' },
+            ].map((s, i) => (
+              <div key={s.num} className="rounded-2xl p-6 border relative overflow-hidden"
+                style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+                <div className="absolute -top-3 -right-2 font-display font-black leading-none select-none"
+                  style={{fontSize:'6rem', color:'rgba(201,106,58,0.06)'}}>
+                  {s.num}
+                </div>
+                <div className="text-3xl mb-4">{s.icon}</div>
+                <h3 className="font-display font-black text-lg mb-2" style={{color:'#1A1210'}}>{s.title}</h3>
+                <p className="text-sm leading-relaxed" style={{color:'#8A7E78'}}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Professional plans */}
+      <section className="py-16 px-6" style={{backgroundColor:'#F5EDE0'}}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{color:'#C96A3A'}}>
+              Choose Your Plan
+            </p>
+            <h2 className="font-display font-black text-4xl" style={{color:'#1A1210'}}>
+              8 professional categories
+            </h2>
+            <p className="text-sm mt-3" style={{color:'#8A7E78'}}>
+              All plans include unlimited client referrals, verified badge, and priority matching.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {PROFESSIONALS.map(pro => (
+              <ProfCard key={pro.id} pro={pro} onApply={setSelected} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust section */}
+      <section className="py-16 px-6" style={{backgroundColor:'#FFFAF5'}}>
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          {[
+            { icon:<Shield size={24} style={{color:'#7A9E7E'}} />, title:'Verified Badge', desc:'Your profile shows a verified professional badge that builds instant trust.' },
+            { icon:<Users size={24} style={{color:'#C96A3A'}} />, title:'Serious Clients', desc:'Every referral comes from a buyer or seller already committed to a deal.' },
+            { icon:<TrendingUp size={24} style={{color:'#D4A853'}} />, title:'Cancel Anytime', desc:'No long-term contract. Pay monthly and cancel if it doesn\'t work for you.' },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} className="flex flex-col items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{backgroundColor:'rgba(26,18,16,0.05)'}}>
+                {icon}
+              </div>
+              <h3 className="font-display font-black text-lg" style={{color:'#1A1210'}}>{title}</h3>
+              <p className="text-sm leading-relaxed" style={{color:'#8A7E78'}}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <AnimatePresence>
+        {selected && <ApplicationModal professional={selected} onClose={() => setSelected(null)} />}
+      </AnimatePresence>
     </div>
   )
 }
