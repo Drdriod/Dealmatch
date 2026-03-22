@@ -54,6 +54,7 @@ const AppShell = ({ children, showNav = true, showFooter = true, showWhatsApp = 
     <main className="flex-1">{children}</main>
     {showFooter && <Footer />}
     {showWhatsApp && <WhatsAppButton />}
+    <InstallPrompt />
   </div>
 )
 
