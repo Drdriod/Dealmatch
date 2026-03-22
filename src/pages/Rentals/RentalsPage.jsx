@@ -358,7 +358,7 @@ import { useRef } from 'react'
 
 // ─── Main Page ─────────────────────────────────────────────
 export default function RentalsPage() {
-  const { user } = useAuth()
+  const { user } = useAuth() || {}
   const [view, setView]         = useState('grid')  // 'grid' | 'swipe'
   const [category, setCategory] = useState('all')
   const [search, setSearch]     = useState('')
