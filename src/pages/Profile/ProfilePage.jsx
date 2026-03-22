@@ -214,6 +214,11 @@ function PhotoUpload({ currentUrl, onUpload }) {
     setUploading(false)
   }
 
+  // Show current profile photo or preview
+  useEffect(() => {
+    if (currentUrl && !preview) setPreview(currentUrl)
+  }, [currentUrl])
+
   return (
     <div>
       <div
@@ -350,7 +355,9 @@ export default function ProfilePage() {
     }
 
     await refreshProfile()
-    toast.success('Profile photo updated! ✅ Photo Verified badge earned.')
+    toast.success('Profile photo updated! ✅ Now complete the live face check.')
+    // Auto-trigger live verification after photo upload
+    setTimeout(() => setShowLiveness(true), 1500)
   }
 
   const handleLivenessSuccess = async () => {
