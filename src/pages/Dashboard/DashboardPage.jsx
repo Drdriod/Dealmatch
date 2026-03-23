@@ -1,169 +1,284 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, ChevronRight, Plus, MapPin, Heart } from 'lucide-react'
-import { getUserMatches, getProperties } from '@/lib/supabase'
+import { motion } from 'framer-motion'
+import { Copy, Share2, Check, Home, Heart, Users, TrendingUp, Plus, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
-const formatPrice = (n) => {
-  if (!n) return '₦0'
-  if (n >= 1_000_000) return `₦${(n / 1_000_000).toFixed(1)}M`
-  return `₦${(n / 1_000).toFixed(0)}K`
+const BASE_URL = 'https://dealmatch-yvdm.vercel.app'
+
+function generateCode(userId) {
+  // Generate a short unique code from user ID
+  return 'DM' + userId.replace(/-/g,'').substring(0,6).toUpperCase()
 }
 
 export default function DashboardPage() {
   const { user, profile } = useAuth()
-  const [matches,  setMatches]  = useState([])
-  const [listings, setListings] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const role = profile?.role || 'buyer'
+  const [referralCode, setReferralCode]   = useState('')
+  const [referralStats, setReferralStats] = useState({ count:0, earnings:0 })
+  const [copied, setCopied]               = useState(false)
+  const [myListings, setMyListings]       = useState([])
+  const [myMatches, setMyMatches]         = useState(0)
+  const [loading, setLoading]             = useState(true)
 
   useEffect(() => {
     if (!user) return
-    ;(async () => {
-      const [{ data: m }, { data: l }] = await Promise.all([
-        getUserMatches(user.id),
-        getProperties(),
-      ])
-      setMatches(m  || [])
-      setListings(l || [])
-      setLoading(false)
-    })()
+    loadDashboard()
   }, [user])
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  const firstName = profile?.full_name?.split(' ')[0] || 'there'
+  const loadDashboard = async () => {
+    setLoading(false)
 
-  const stats = role === 'buyer'
-    ? [
-        { icon: '❤️',  label: 'Matches',          value: matches.length, color: 'text-terracotta' },
-        { icon: '👀',  label: 'Properties Viewed', value: 24,             color: 'text-deep' },
-        { icon: '⭐',  label: 'Super Liked',        value: 3,              color: 'text-gold' },
-        { icon: '🤝',  label: 'Pro Contacts',       value: 2,              color: 'text-sage' },
-      ]
-    : [
-        { icon: '🏗️', label: 'Active Listings',    value: listings.length, color: 'text-terracotta' },
-        { icon: '👀', label: 'Total Views',          value: 142,             color: 'text-deep' },
-        { icon: '❤️', label: 'Total Likes',          value: 38,              color: 'text-sage' },
-        { icon: '💬', label: 'Enquiries',            value: 7,               color: 'text-gold' },
-      ]
+    // Generate or fetch referral code
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('referral_code, referral_earnings')
+      .eq('id', user.id)
+      .single()
 
-  const listItems = role === 'buyer' ? matches.slice(0, 4) : listings.slice(0, 4)
+    let code = prof?.referral_code
+    if (!code) {
+      code = generateCode(user.id)
+      await supabase.from('profiles').update({ referral_code: code }).eq('id', user.id)
+    }
+    setReferralCode(code)
+    setReferralStats({ count: 0, earnings: prof?.referral_earnings || 0 })
+
+    // Fetch listings
+    const { data: listings } = await supabase
+      .from('properties')
+      .select('id, title, price, status, category, created_at')
+      .eq('seller_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    setMyListings(listings || [])
+
+    // Fetch matches count
+    const { count } = await supabase
+      .from('matches')
+      .select('*', { count:'exact', head:true })
+      .eq('user_id', user.id)
+    setMyMatches(count || 0)
+  }
+
+  const referralLink = `${BASE_URL}?ref=${referralCode}`
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(referralLink)
+    setCopied(true)
+    toast.success('Referral link copied!')
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleShare = async () => {
+    const text = `🏡 Join me on DealMatch — Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up with my link:\n${referralLink}\n\nUse my code: *${referralCode}*`
+    if (navigator.share) {
+      await navigator.share({ title:'Join DealMatch', text })
+    } else {
+      await navigator.clipboard.writeText(text)
+      toast.success('Share text copied!')
+    }
+  }
+
+  const handleWhatsAppShare = () => {
+    const msg = encodeURIComponent(
+      `🏡 Join me on DealMatch — Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up here: ${referralLink}\n\nUse my code: *${referralCode}*`
+    )
+    window.open(`https://wa.me/?text=${msg}`, '_blank')
+  }
+
+  const verificationLevel = profile?.is_live_verified ? 'live' : profile?.avatar_url ? 'photo' : 'none'
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-10">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="min-h-screen pt-20 pb-16" style={{backgroundColor:'#F5EDE0'}}>
+      <div className="max-w-2xl mx-auto px-4">
 
-        {/* Greeting */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-black text-deep">
-            {greeting}, {firstName} 👋
+        {/* Welcome */}
+        <div className="mb-6">
+          <h1 className="font-display text-3xl font-black" style={{color:'#1A1210'}}>
+            Hey, {profile?.full_name?.split(' ')[0] || 'there'} 👋
           </h1>
-          <p className="text-deep/40 text-sm mt-1">
-            {role === 'buyer'
-              ? "Here's what's happening with your property search."
-              : "Here's your listings overview."}
+          <p className="text-sm mt-1" style={{color:'#8A7E78'}}>
+            Here's your DealMatch dashboard
           </p>
         </div>
 
+        {/* Verification alert */}
+        {verificationLevel === 'none' && (
+          <Link to="/profile"
+            className="flex items-center gap-3 p-4 rounded-2xl mb-5 border-2"
+            style={{backgroundColor:'rgba(201,106,58,0.06)', borderColor:'rgba(201,106,58,0.3)'}}>
+            <span className="text-2xl">⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold" style={{color:'#1A1210'}}>Complete your verification</p>
+              <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>Upload photo + live check to list and buy properties</p>
+            </div>
+            <ArrowRight size={16} style={{color:'#C96A3A', flexShrink:0}} />
+          </Link>
+        )}
+
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {stats.map(s => (
-            <div key={s.label} className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="text-2xl mb-2">{s.icon}</div>
-              <p className={`font-display text-3xl font-black ${s.color}`}>{s.value}</p>
-              <p className="text-xs text-deep/40 mt-1">{s.label}</p>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label:'My Listings', value: myListings.length, icon:'🏠', link:'/list' },
+            { label:'Matches',     value: myMatches,         icon:'❤️', link:'/matches' },
+            { label:'Referrals',   value: referralStats.count, icon:'👥', link:null },
+          ].map(s => (
+            <div key={s.label} className="rounded-2xl p-4 text-center border"
+              style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+              <div className="text-2xl mb-1">{s.icon}</div>
+              <p className="font-display font-black text-2xl" style={{color:'#C96A3A'}}>{s.value}</p>
+              <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <Link to="/browse"
-            className="bg-terracotta text-white rounded-2xl p-5 flex items-center justify-between group hover:bg-terracotta-600 transition-colors">
-            <div>
-              <p className="font-display text-lg font-black">Browse Deals</p>
-              <p className="text-white/60 text-xs mt-0.5">Find new matches</p>
-            </div>
-            <Heart size={22} className="group-hover:scale-110 transition-transform" />
-          </Link>
+        {/* ── REFERRAL SECTION ── */}
+        <div className="rounded-2xl overflow-hidden mb-6"
+          style={{backgroundColor:'#1A1210', boxShadow:'0 8px 32px rgba(26,18,16,0.2)'}}>
 
-          {role === 'buyer' ? (
-            <Link to="/professionals"
-              className="bg-white rounded-2xl p-5 flex items-center justify-between group hover:shadow-card transition-all">
+          {/* Header */}
+          <div className="p-5 border-b" style={{borderColor:'rgba(255,255,255,0.08)'}}>
+            <div className="flex items-center justify-between">
               <div>
-                <p className="font-display text-lg font-black text-deep">Find Pros</p>
-                <p className="text-deep/40 text-xs mt-0.5">Surveyors, inspectors</p>
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{color:'rgba(255,255,255,0.4)'}}>
+                  Your Referral Link
+                </p>
+                <h3 className="font-display font-black text-xl" style={{color:'#FFFFFF'}}>
+                  Invite & Earn 💰
+                </h3>
               </div>
-              <span className="text-2xl group-hover:scale-110 transition-transform">🤝</span>
+              <div className="text-right">
+                <p className="font-display font-black text-2xl" style={{color:'#C96A3A'}}>
+                  ₦{referralStats.earnings.toLocaleString()}
+                </p>
+                <p className="text-xs" style={{color:'rgba(255,255,255,0.3)'}}>earned so far</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5">
+            {/* Referral code */}
+            <div className="flex items-center justify-between p-3 rounded-2xl mb-3"
+              style={{backgroundColor:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)'}}>
+              <div>
+                <p className="text-xs mb-0.5" style={{color:'rgba(255,255,255,0.4)'}}>Your code</p>
+                <p className="font-display font-black text-xl tracking-widest" style={{color:'#C96A3A'}}>
+                  {referralCode || '...'}
+                </p>
+              </div>
+              <button onClick={handleCopy}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                style={{backgroundColor: copied ? '#7A9E7E' : '#C96A3A', color:'#FFFFFF'}}>
+                {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy Code</>}
+              </button>
+            </div>
+
+            {/* Full link */}
+            <div className="p-3 rounded-2xl mb-4"
+              style={{backgroundColor:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)'}}>
+              <p className="text-xs mb-1" style={{color:'rgba(255,255,255,0.3)'}}>Your referral link</p>
+              <p className="text-xs font-mono break-all" style={{color:'rgba(255,255,255,0.6)'}}>
+                {referralLink}
+              </p>
+            </div>
+
+            {/* Share buttons */}
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={handleCopy}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-semibold transition-all"
+                style={{backgroundColor:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.7)'}}>
+                <Copy size={16} />
+                Copy Link
+              </button>
+              <button onClick={handleWhatsAppShare}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-semibold"
+                style={{backgroundColor:'#25D366', color:'#FFFFFF'}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </button>
+              <button onClick={handleShare}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-semibold"
+                style={{backgroundColor:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.7)'}}>
+                <Share2 size={16} />
+                Share
+              </button>
+            </div>
+
+            {/* Earnings breakdown */}
+            <div className="mt-4 p-3 rounded-2xl" style={{backgroundColor:'rgba(255,255,255,0.04)'}}>
+              <p className="text-xs font-bold mb-2" style={{color:'rgba(255,255,255,0.4)'}}>How you earn</p>
+              <div className="space-y-1.5 text-xs" style={{color:'rgba(255,255,255,0.5)'}}>
+                <p>👤 New user signs up via your link → <strong style={{color:'#D4A853'}}>₦500</strong></p>
+                <p>💼 Professional subscribes via your link → <strong style={{color:'#D4A853'}}>₦2,000</strong></p>
+                <p>🏡 Property deal closes via your referral → <strong style={{color:'#D4A853'}}>0.5% commission</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* My Listings */}
+        <div className="rounded-2xl border mb-6" style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+          <div className="p-4 border-b flex items-center justify-between" style={{borderColor:'#E8DDD2'}}>
+            <h3 className="font-display font-black text-base" style={{color:'#1A1210'}}>My Listings</h3>
+            <Link to="/list" className="flex items-center gap-1 text-xs font-semibold" style={{color:'#C96A3A'}}>
+              <Plus size={13} /> Add New
             </Link>
+          </div>
+          {myListings.length === 0 ? (
+            <div className="p-8 text-center">
+              <div className="text-4xl mb-3">🏠</div>
+              <p className="text-sm font-semibold mb-1" style={{color:'#1A1210'}}>No listings yet</p>
+              <p className="text-xs mb-4" style={{color:'#8A7E78'}}>List your first property to start matching with buyers</p>
+              <Link to="/list" className="btn-primary text-sm px-6 py-2.5 inline-flex">
+                List a Property →
+              </Link>
+            </div>
           ) : (
-            <Link to="/list"
-              className="bg-white rounded-2xl p-5 flex items-center justify-between group hover:shadow-card transition-all">
-              <div>
-                <p className="font-display text-lg font-black text-deep">Add Listing</p>
-                <p className="text-deep/40 text-xs mt-0.5">List a property</p>
-              </div>
-              <Plus size={22} className="text-terracotta group-hover:scale-110 transition-transform" />
-            </Link>
+            <div className="divide-y" style={{borderColor:'#E8DDD2'}}>
+              {myListings.map(listing => (
+                <div key={listing.id} className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    style={{backgroundColor:'rgba(201,106,58,0.08)'}}>
+                    {listing.category === 'hotel' ? '🏨' : listing.category === 'rental' ? '🔑' : '🏠'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{color:'#1A1210'}}>{listing.title}</p>
+                    <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>
+                      ₦{Number(listing.price).toLocaleString()} · {listing.status}
+                    </p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full font-semibold flex-shrink-0"
+                    style={{
+                      backgroundColor: listing.status === 'active' ? 'rgba(122,158,126,0.12)' : 'rgba(26,18,16,0.06)',
+                      color: listing.status === 'active' ? '#5C8060' : '#8A7E78',
+                    }}>
+                    {listing.status}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Recent items */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display text-xl font-black">
-              {role === 'buyer' ? 'Recent Matches' : 'Your Listings'}
-            </h2>
-            <Link
-              to={role === 'buyer' ? '/matches' : '/list'}
-              className="text-xs text-terracotta font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-              {role === 'buyer' ? 'View all' : 'Add new'} <ChevronRight size={13} />
+        {/* Quick links */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { to:'/browse',        icon:'🏡', label:'Browse Properties' },
+            { to:'/matches',       icon:'❤️', label:'My Matches' },
+            { to:'/rentals',       icon:'🔑', label:'Rentals' },
+            { to:'/professionals', icon:'💼', label:'Find a Pro' },
+            { to:'/earn',          icon:'💰', label:'Earn with Us' },
+            { to:'/profile',       icon:'👤', label:'My Profile' },
+          ].map(({ to, icon, label }) => (
+            <Link key={to} to={to}
+              className="flex items-center gap-3 p-4 rounded-2xl border transition-all hover:-translate-y-0.5"
+              style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+              <span className="text-xl">{icon}</span>
+              <span className="text-sm font-semibold" style={{color:'#1A1210'}}>{label}</span>
             </Link>
-          </div>
-
-          {loading ? (
-            <div className="py-8 text-center">
-              <div className="w-6 h-6 border-2 border-deep/10 border-t-terracotta rounded-full animate-spin mx-auto" />
-            </div>
-          ) : listItems.length === 0 ? (
-            <div className="py-10 text-center">
-              <div className="text-4xl mb-3">{role === 'buyer' ? '💘' : '🏗️'}</div>
-              <p className="text-deep/40 text-sm">
-                {role === 'buyer'
-                  ? 'Start swiping to see your matches here.'
-                  : 'List your first property to get started.'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {listItems.map((item, i) => {
-                const p = role === 'buyer' ? item.property : item
-                if (!p) return null
-                const EMOJI = { land:'🌿', apartment:'🏢', duplex:'🏡', detached:'🏡', terrace:'🏠', commercial:'🏬' }
-                return (
-                  <Link key={item.id || i} to={`/property/${p.id}`}
-                    className="flex items-center gap-3 py-3 border-b border-deep/5 last:border-0 group hover:bg-cream -mx-2 px-2 rounded-xl transition-colors">
-                    <div className="w-12 h-12 rounded-xl bg-cream flex items-center justify-center text-xl flex-shrink-0">
-                      {EMOJI[p.property_type] || '🏡'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-deep text-sm truncate">{p.title || 'Untitled'}</p>
-                      <div className="flex items-center gap-1 text-xs text-deep/40 mt-0.5">
-                        <MapPin size={10} />{p.city}, {p.state}
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-display font-black text-sm text-deep">{formatPrice(p.price)}</p>
-                      {role === 'buyer' && item.match_score && (
-                        <p className="text-xs text-terracotta font-bold">{item.match_score}% match</p>
-                      )}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
+          ))}
         </div>
       </div>
     </div>
