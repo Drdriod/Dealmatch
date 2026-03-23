@@ -163,38 +163,34 @@ function ApplicationModal({ professional, onClose }) {
     }
     setSubmitting(true)
 
-    const { data, error } = await supabase
-      .from('professional_applications')
-      .insert({
-        user_id:        user?.id,
-        type:           professional.id,
-        full_name:      form.full_name,
-        company:        form.company,
-        phone:          form.phone,
-        email:          form.email,
-        license_no:     form.license_no,
-        years_exp:      Number(form.years_exp) || 0,
-        coverage_areas: form.coverage,
-        bio:            form.bio,
-        monthly_fee:    professional.price,
-        status:         'pending_payment',
-        created_at:     new Date().toISOString(),
-      })
-      .select()
-      .single()
-
-    setSubmitting(false)
-
-    if (error) {
-      // Even if DB fails, proceed to payment step
-      console.error(error)
-      toast('Application saved locally. Proceeding to payment.')
-    } else {
-      setAppId(data?.id)
-      analytics.professionalApplied?.(professional.id)
+    // Try to save to DB but always proceed regardless
+    try {
+      const { data } = await supabase
+        .from('professional_applications')
+        .insert({
+          user_id:        user?.id || null,
+          type:           professional.id,
+          full_name:      form.full_name,
+          company:        form.company,
+          phone:          form.phone,
+          email:          form.email,
+          license_no:     form.license_no,
+          years_exp:      Number(form.years_exp) || 0,
+          coverage_areas: form.coverage,
+          bio:            form.bio,
+          monthly_fee:    professional.price,
+          status:         'pending_payment',
+          created_at:     new Date().toISOString(),
+        })
+        .select()
+        .single()
+      if (data?.id) setAppId(data.id)
+    } catch (err) {
+      console.log('DB save skipped — proceeding to payment')
     }
 
-    // Always move to payment step regardless
+    setSubmitting(false)
+    // Always move to payment step
     setStep('payment')
   }
 
