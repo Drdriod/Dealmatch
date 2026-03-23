@@ -196,8 +196,12 @@ import clsx from 'clsx'
 // ─── Photo Upload ──────────────────────────────────────────
 function PhotoUpload({ currentUrl, onUpload }) {
   const [dragging, setDragging] = useState(false)
-  const [preview, setPreview]   = useState(currentUrl || null)
+  const [preview, setPreview]   = useState(null)
   const [uploading, setUploading] = useState(false)
+
+  useEffect(() => {
+    if (currentUrl) setPreview(currentUrl)
+  }, [currentUrl])
 
   const handleFile = async (file) => {
     if (!file || !file.type.startsWith('image/')) {
@@ -213,11 +217,6 @@ function PhotoUpload({ currentUrl, onUpload }) {
     await onUpload(file)
     setUploading(false)
   }
-
-  // Show current profile photo or preview
-  useEffect(() => {
-    if (currentUrl && !preview) setPreview(currentUrl)
-  }, [currentUrl])
 
   return (
     <div>
