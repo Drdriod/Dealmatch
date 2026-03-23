@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Star, X, Search, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
+import BookingReceipt from '@/components/ui/BookingReceipt'
 
 const DEALMATCH_WA = '2347057392060'
 
@@ -28,6 +29,8 @@ const AMENITY_ICONS = { WiFi:'📶', Pool:'🏊', Restaurant:'🍽️', Gym:'�
 function BookingModal({ hotel, onClose }) {
   const [form, setForm]   = useState({ name:'', phone:'', email:'', checkin:'', checkout:'', guests:1, rooms:1, special:'' })
   const [submitted, setSubmitted] = useState(false)
+  const [receipt, setReceipt]     = useState(null)
+  const [showReceipt, setShowReceipt] = useState(false)
   const set = (k) => (e) => setForm(f => ({...f, [k]: e.target.value}))
 
   const nights = form.checkin && form.checkout
@@ -63,6 +66,20 @@ function BookingModal({ hotel, onClose }) {
 
     window.open(`https://wa.me/${DEALMATCH_WA}?text=${msg}`, '_blank')
     setSubmitted(true)
+    setReceipt({
+      name: hotel.name,
+      hotel_name: hotel.name,
+      city: hotel.city,
+      state: hotel.state,
+      type: hotel.type,
+      guest_name: form.name,
+      guest_phone: form.phone,
+      checkin: form.checkin,
+      checkout: form.checkout,
+      rooms: Number(form.rooms),
+      guests: Number(form.guests),
+      price_per_night: hotel.price_per_night,
+    })
   }
 
   return (
@@ -104,7 +121,14 @@ function BookingModal({ hotel, onClose }) {
               <p>👥 {form.guests} guest{form.guests > 1 ? 's' : ''} · {form.rooms} room{form.rooms > 1 ? 's' : ''}</p>
               <p>💰 Total: <strong style={{color:'#C96A3A'}}>₦{total.toLocaleString()}</strong></p>
             </div>
-            <button onClick={onClose} className="btn-primary w-full py-3">Done</button>
+            <button onClick={() => setShowReceipt(true)}
+              className="btn-primary w-full py-3 mb-3">
+              📄 View & Download Receipt
+            </button>
+            <button onClick={onClose} className="w-full py-3 rounded-2xl text-sm font-semibold border-2"
+              style={{borderColor:'#E8DDD2', color:'#5C4A3A', backgroundColor:'#FFFFFF'}}>
+              Close
+            </button>
           </div>
         ) : (
           <form onSubmit={handleBook} className="p-5 space-y-4 overflow-y-auto">
@@ -192,6 +216,9 @@ function BookingModal({ hotel, onClose }) {
           </form>
         )}
       </motion.div>
+      {showReceipt && receipt && (
+        <BookingReceipt booking={receipt} onClose={() => setShowReceipt(false)} />
+      )}
     </div>
   )
 }
