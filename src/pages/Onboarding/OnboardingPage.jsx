@@ -60,6 +60,7 @@ export default function OnboardingPage() {
     role:'', property_goal:'', preferred_states:[],
     property_types:[], budget_min:'', budget_max:'',
     needs_financing:false, full_name:'', phone:'',
+    referral_code: '',
   })
 
   const set       = (k, v) => setData(d => ({ ...d, [k]: v }))
@@ -120,18 +121,31 @@ export default function OnboardingPage() {
         </div>
       ),
     },
-    // Step 3 — Preferences (skip for landlords/sellers who don't need budget filters)
+    // Step 3 — Preferences (Unique per role)
     {
       title: 'Preferences',
-      valid: () => data.role === 'landlord' || data.role === 'seller' || !!data.budget_max,
+      valid: () => {
+        if (data.role === 'buyer' || data.role === 'renter' || data.role === 'investor') return !!data.budget_max;
+        if (data.role === 'landlord' || data.role === 'seller') return data.preferred_states.length > 0;
+        return true;
+      },
       content: (
         <div className="space-y-5">
           <div>
-            <h2 className="font-display font-black text-2xl" style={{ color:'#1A1210' }}>Your preferences 📍</h2>
-            <p className="text-sm mt-1" style={{ color:'#8A7E78' }}>Tell us where and what you're looking for.</p>
+            <h2 className="font-display font-black text-2xl" style={{ color:'#1A1210' }}>
+              {data.role === 'landlord' || data.role === 'seller' ? 'Listing Preferences 📍' : 'Your preferences 📍'}
+            </h2>
+            <p className="text-sm mt-1" style={{ color:'#8A7E78' }}>
+              {data.role === 'landlord' || data.role === 'seller' 
+                ? 'Tell us where your properties are located.' 
+                : 'Tell us where and what you\'re looking for.'}
+            </p>
           </div>
+          
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Preferred States</label>
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>
+              {data.role === 'landlord' || data.role === 'seller' ? 'Primary States of Operation' : 'Preferred States'}
+            </label>
             <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
               {ALL_STATES.map(s => (
                 <button key={s} onClick={() => toggleArr('preferred_states', s)}
@@ -142,6 +156,7 @@ export default function OnboardingPage() {
               ))}
             </div>
           </div>
+
           {(data.role === 'buyer' || data.role === 'renter' || data.role === 'investor') && (
             <>
               <div>
@@ -184,10 +199,25 @@ export default function OnboardingPage() {
               </div>
             </>
           )}
+
           {(data.role === 'landlord' || data.role === 'seller') && (
-            <div className="rounded-2xl p-4 border" style={{ backgroundColor:'rgba(122,158,126,0.06)', borderColor:'rgba(122,158,126,0.25)' }}>
-              <p className="text-sm font-semibold mb-1" style={{ color:'#5C8060' }}>✅ No budget required</p>
-              <p className="text-xs" style={{ color:'#8A7E78' }}>As a {data.role}, you'll list your properties — no budget preferences needed. Just select your preferred states.</p>
+            <div className="space-y-4">
+              <div className="rounded-2xl p-4 border" style={{ backgroundColor:'rgba(122,158,126,0.06)', borderColor:'rgba(122,158,126,0.25)' }}>
+                <p className="text-sm font-semibold mb-1" style={{ color:'#5C8060' }}>✅ Listing Focus</p>
+                <p className="text-xs" style={{ color:'#8A7E78' }}>As a {data.role}, we'll prioritize showing your listings to buyers in your primary states.</p>
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Typical Property Types You Handle</label>
+                <div className="flex flex-wrap gap-2">
+                  {PROP_TYPES.map(t => (
+                    <button key={t} onClick={() => toggleArr('property_types', t)}
+                      className="px-3 py-2 rounded-full text-xs font-medium border-2 transition-all"
+                      style={{ borderColor: data.property_types.includes(t) ? '#7A9E7E' : '#E8DDD2', backgroundColor: data.property_types.includes(t) ? '#7A9E7E' : '#FFFFFF', color: data.property_types.includes(t) ? '#FFFFFF' : '#5C4A3A' }}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -235,9 +265,25 @@ export default function OnboardingPage() {
     if (!isLast) { setStep(s => s + 1); return }
 
     if (!user?.id) { toast.error('Not signed in'); return }
+    if (!data.phone) { toast.error('Phone number is required'); return }
+    
     setSaving(true)
 
     try {
+      // Check for duplicate phone number
+      const { data: existingPhone } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', data.phone)
+        .neq('id', user.id)
+        .maybeSingle()
+      
+      if (existingPhone) {
+        toast.error('This phone number is already registered with another account')
+        setSaving(false)
+        return
+      }
+
       // ── Blueprint: Step 4 always saves correctly before proceeding ──
       const payload = {
         id:                   user.id,

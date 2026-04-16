@@ -26,11 +26,15 @@ export default function AuthCallback() {
 
       if (!profile) {
         // Brand new user — create basic profile then send to onboarding
+        const urlParams = new URLSearchParams(window.location.search)
+        const referredBy = user.user_metadata?.referred_by || urlParams.get('ref')
+        
         await supabase.from('profiles').upsert({
           id:        user.id,
           email:     user.email,
           full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
           avatar_url:user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
+          referred_by: referredBy || null,
           onboarding_completed: false,
           updated_at: new Date().toISOString(),
         })

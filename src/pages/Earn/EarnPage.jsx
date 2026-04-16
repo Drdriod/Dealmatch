@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 const WHATSAPP = '2347057392060'
 
 const PROS = [
+  { id:'property_manager', emoji:'🏢', title:'Property Manager (B2B)', desc:'Manage multiple listings for landlords. B2B dashboard & bulk uploads.', monthly:50_000, annual:480_000 },
   { id:'agent',       emoji:'🏘️', title:'Real Estate Agent',    desc:'Represent buyers & sellers. Get matched on every deal in your area.', monthly:15_000,  annual:144_000  },
   { id:'surveyor',    emoji:'📐', title:'Land Surveyor',         desc:'Get matched with land transactions needing your expertise.', monthly:25_000, annual:240_000 },
   { id:'inspector',   emoji:'🔍', title:'Property Inspector',    desc:'Receive inspection requests on matched properties.', monthly:35_000, annual:336_000 },
@@ -120,7 +121,7 @@ function AMGSection() {
 export default function EarnPage() {
   const { user, profile } = useAuth()
   const [applying,   setApplying]   = useState(null)
-  const [form, setForm] = useState({ full_name:'', phone:'', company:'', license_no:'', years_exp:'', coverage_areas:'', bio:'', plan:'monthly' })
+  const [form, setForm] = useState({ full_name:'', phone:'', company:'', license_no:'', years_exp:'', coverage_areas:'', bio:'', plan:'monthly', payment_method:'paystack' })
   const [submitting, setSubmitting] = useState(false)
   const [done,       setDone]       = useState(false)
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -129,19 +130,52 @@ export default function EarnPage() {
   const handleApply = async () => {
     if (!form.full_name || !form.phone) { toast.error('Name and phone required'); return }
     if (!user?.email)                   { toast.error('Please sign in first'); return }
+    
     setSubmitting(true)
     const amount = form.plan === 'annual' ? pro.annual : pro.monthly
+    const reference = generateReference()
+
+    if (form.payment_method === 'crypto') {
+      // Crypto payment flow
+      try {
+        await supabase.from('professional_applications').insert({
+          user_id: user.id, type: applying, full_name: form.full_name,
+          company: form.company, phone: form.phone, email: user.email,
+          license_no: form.license_no, years_exp: Number(form.years_exp) || 0,
+          coverage_areas: form.coverage_areas, bio: form.bio,
+          monthly_fee: pro.monthly, status:'pending_crypto',
+          payment_ref: reference
+        })
+        
+        // Redirect to a crypto payment instruction page or show modal
+        toast.success('Application saved! Please complete crypto payment.')
+        setSubmitting(false); setDone(true); setApplying(null)
+      } catch (err) {
+        toast.error('Failed to save application: ' + err.message)
+        setSubmitting(false)
+      }
+      return
+    }
+
+    // Paystack flow
     await initializePaystackPayment({
       email: user.email, amount,
-      reference: generateReference(),
-      metadata: { type:'professional_subscription', professional_id: applying, plan_type: form.plan, full_name: form.full_name, phone: form.phone },
+      reference,
+      metadata: { 
+        type:'professional_subscription', 
+        professional_id: applying, 
+        plan_type: form.plan, 
+        full_name: form.full_name, 
+        phone: form.phone 
+      },
       onSuccess: async response => {
         await supabase.from('professional_applications').insert({
           user_id: user.id, type: applying, full_name: form.full_name,
           company: form.company, phone: form.phone, email: user.email,
           license_no: form.license_no, years_exp: Number(form.years_exp) || 0,
           coverage_areas: form.coverage_areas, bio: form.bio,
-          monthly_fee: pro.monthly, status:'pending_payment',
+          monthly_fee: pro.monthly, status:'pending_review',
+          payment_ref: response.reference
         })
         setSubmitting(false); setDone(true); setApplying(null)
       },
@@ -258,6 +292,24 @@ export default function EarnPage() {
                     className="input resize-none text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
                 </div>
                 <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Payment Method</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[['paystack','Paystack (Card/Bank)'],['crypto','Crypto (USDT/BTC)']].map(([v,l]) => (
+                      <button key={v} type="button" onClick={() => setForm(f => ({ ...f, payment_method:v }))}
+                        className="py-3 rounded-xl text-xs font-semibold border-2 transition-all"
+                        style={{ borderColor: form.payment_method === v ? '#C96A3A' : '#E8DDD2', color: form.payment_method === v ? '#C96A3A' : '#8A7E78', backgroundColor: form.payment_method === v ? 'rgba(201,106,58,0.05)' : '#FFFFFF' }}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  {form.payment_method === 'crypto' && (
+                    <p className="text-[10px] mt-2" style={{ color:'#C96A3A' }}>
+                      Note: DealMatch fee is separate from Blockchain network fees.
+                    </p>
+                  )}
+                </div>
+
+                <div>
                   <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Plan</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[['monthly',`Monthly — ₦${pro.monthly.toLocaleString()}`],['annual',`Annual — ₦${pro.annual.toLocaleString()}`]].map(([v,l]) => (
@@ -268,6 +320,21 @@ export default function EarnPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="p-4 rounded-2xl border-2 border-dashed" style={{ borderColor:'#E8DDD2' }}>
+                  <p className="text-xs font-bold mb-2" style={{ color:'#1A1210' }}>Verification Requirements</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs" style={{ color:'#8A7E78' }}>
+                      <Check size={12} className="text-green-600" /> Professional Certificate Upload
+                    </div>
+                    <div className="flex items-center gap-2 text-xs" style={{ color:'#8A7E78' }}>
+                      <Check size={12} className="text-green-600" /> Face Verification (Liveness Check)
+                    </div>
+                  </div>
+                  <p className="text-[10px] mt-3" style={{ color:'#8A7E78' }}>
+                    You will be prompted to upload certificates and complete face verification after payment.
+                  </p>
                 </div>
                 <button onClick={handleApply} disabled={submitting || !form.full_name || !form.phone}
                   className="btn-primary w-full py-4"

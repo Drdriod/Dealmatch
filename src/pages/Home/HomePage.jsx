@@ -79,7 +79,7 @@ export default function HomePage() {
           <motion.p initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }}
             className="text-lg leading-relaxed mb-4 max-w-xl mx-auto"
             style={{ color:'rgba(26,18,16,0.55)' }}>
-            Swipe, match, and connect. Nigeria's first dating-app style real estate platform — find your home the way you'd find love.
+            The smartest, fastest way to find your perfect property. Our AI-powered platform connects you with verified listings that match your exact needs.
           </motion.p>
 
           {/* Tagline */}
@@ -127,7 +127,7 @@ export default function HomePage() {
           <FadeUp>
             <div className="text-center mb-16">
               <p className="section-tag">Simple Process</p>
-              <h2 className="section-title mb-4">Tinder for real estate — but smarter</h2>
+              <h2 className="section-title mb-4">A Smarter Way to Find Property</h2>
               <p className="section-sub mx-auto">Three steps from preference to property.</p>
             </div>
           </FadeUp>
@@ -171,30 +171,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Commission table ─────────────────────────────── */}
-      <section className="py-20 px-6" style={{ backgroundColor:'#FAF6F0' }}>
-        <div className="max-w-2xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-10">
-              <p className="section-tag">Transparent Pricing</p>
-              <h2 className="font-display font-black text-3xl" style={{ color:'#1A1210' }}>Commission Structure</h2>
-              <p className="text-sm mt-2" style={{ color:'#8A7E78' }}>Listing is always free. We only earn when you do.</p>
-            </div>
-            <div className="rounded-3xl overflow-hidden border" style={{ borderColor:'#E8DDD2' }}>
-              {COMMISSION.map((c, i) => (
-                <div key={c.type} className={`flex items-center justify-between p-5 ${i < COMMISSION.length - 1 ? 'border-b' : ''}`}
-                  style={{ borderColor:'#E8DDD2', backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF6F0' }}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{c.icon}</span>
-                    <p className="font-semibold text-sm" style={{ color:'#1A1210' }}>{c.type}</p>
-                  </div>
-                  <span className="font-black text-base" style={{ color:'#C96A3A' }}>{c.rate}</span>
-                </div>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-      </section>
+
 
       {/* ── CTA ──────────────────────────────────────────── */}
       <section className="py-24 px-6" style={{ backgroundColor:'#FFFFFF' }}>

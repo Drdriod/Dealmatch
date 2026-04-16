@@ -45,6 +45,7 @@ const INITIAL = {
   bedrooms:'', bathrooms:'', size_sqm:'',
   description:'', features:[], documents:[],
   images:[], video_url:'',
+  referral_code: '',
 }
 
 // ── Upload a single image file to Supabase Storage ────────
@@ -525,6 +526,7 @@ export default function ListPropertyPage() {
         seller_id:    user.id,
         status:       'active',
         category:     'sale',
+        referral_code: form.referral_code || null,
         // ✅ FIX 2b: Pass cleaned uploaded URLs, not blob objects
         images:       uploadedImages,
       }
@@ -613,10 +615,19 @@ export default function ListPropertyPage() {
         {/* Step content */}
         <div>{current.content}</div>
 
-        {/* Commission Agreement */}
-        <div className="mt-6">
-          <CommissionAgreement category="sale" agreed={agreed} onChange={setAgreed} />
+      {/* Referral Code & Commission Agreement */}
+      <div className="mt-6 space-y-4">
+        <div className="p-4 rounded-2xl border-2" style={{ borderColor:'#E8DDD2', backgroundColor:'#FFFFFF' }}>
+          <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Referral Code (Optional)</label>
+          <input className="input text-sm" type="text" placeholder="Enter code to reward your referrer"
+            value={form.referral_code} onChange={setE('referral_code')}
+            style={{ backgroundColor:'#F9F9F9', color:'#1A1210' }} />
+          <p className="text-[10px] mt-1.5" style={{ color:'#8A7E78' }}>
+            If someone shared this opportunity with you, enter their code here so we can reward them when the deal closes.
+          </p>
         </div>
+        <CommissionAgreement category="sale" agreed={agreed} onChange={setAgreed} />
+      </div>
 
         {/* Upload progress indicator */}
         {saving && uploadProgress && (

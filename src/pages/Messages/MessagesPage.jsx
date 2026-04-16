@@ -298,53 +298,75 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!user) return
     loadThreads()
+    
+    // Swift communication: Real-time subscription for new messages
+    const channel = supabase
+      .channel('messages_global')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        if (payload.new.recipient_id === user.id || payload.new.sender_id === user.id) {
+          loadThreads()
+        }
+      })
+      .subscribe()
+
     // Auto-open thread from URL param
     const tid = params.get('thread')
     if (tid) setActiveThread({ id: tid, other_user_name:'...', property_title:'...', other_user_id:'', property_id:'', my_name: profile?.full_name || '' })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   const loadThreads = async () => {
-    setLoading(true)
-    // Get latest message per thread
-    const { data } = await supabase
-      .from('messages')
-      .select('thread_id, content, created_at, sender_id, sender_name, recipient_id, property_id, read')
-      .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-      .order('created_at', { ascending: false })
+    try {
+      setLoading(true)
+      // Get latest message per thread
+      const { data, error } = await supabase
+        .from('messages')
+        .select('thread_id, content, created_at, sender_id, sender_name, recipient_id, property_id, read')
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
 
-    if (!data) { setLoading(false); return }
+      if (error) throw error
+      if (!data) { setThreads([]); return }
 
-    // Group by thread_id, get latest per thread
-    const seen = new Set()
-    const unique = data.filter(m => { if (seen.has(m.thread_id)) return false; seen.add(m.thread_id); return true })
+      // Group by thread_id, get latest per thread
+      const seen = new Set()
+      const unique = data.filter(m => { if (seen.has(m.thread_id)) return false; seen.add(m.thread_id); return true })
 
-    // Fetch property titles
-    const propertyIds = [...new Set(unique.map(m => m.property_id).filter(Boolean))]
-    let propMap = {}
-    if (propertyIds.length) {
-      const { data: props } = await supabase.from('properties').select('id, title, seller_id').in('id', propertyIds)
-      propMap = Object.fromEntries((props || []).map(p => [p.id, p]))
-    }
-
-    const threadsFormatted = unique.map(m => {
-      const isMe      = m.sender_id === user.id
-      const otherId   = isMe ? m.recipient_id : m.sender_id
-      const otherName = isMe ? '...' : (m.sender_name || 'User')
-      const prop      = propMap[m.property_id]
-      return {
-        id:              m.thread_id,
-        other_user_id:   otherId,
-        other_user_name: otherName,
-        property_id:     m.property_id,
-        property_title:  prop?.title || 'Property',
-        last_message:    m.content,
-        created_at:      m.created_at,
-        unread:          !m.read && m.recipient_id === user.id,
-        my_name:         profile?.full_name || 'Me',
+      // Fetch property titles
+      const propertyIds = [...new Set(unique.map(m => m.property_id).filter(Boolean))]
+      let propMap = {}
+      if (propertyIds.length) {
+        const { data: props } = await supabase.from('properties').select('id, title, seller_id').in('id', propertyIds)
+        propMap = Object.fromEntries((props || []).map(p => [p.id, p]))
       }
-    })
-    setThreads(threadsFormatted)
-    setLoading(false)
+
+      const threadsFormatted = unique.map(m => {
+        const isMe      = m.sender_id === user.id
+        const otherId   = isMe ? m.recipient_id : m.sender_id
+        const otherName = isMe ? '...' : (m.sender_name || 'User')
+        const prop      = propMap[m.property_id]
+        return {
+          id:              m.thread_id,
+          other_user_id:   otherId,
+          other_user_name: otherName,
+          property_id:     m.property_id,
+          property_title:  prop?.title || 'Property',
+          last_message:    m.content,
+          created_at:      m.created_at,
+          unread:          !m.read && m.recipient_id === user.id,
+          my_name:         profile?.full_name || 'Me',
+        }
+      })
+      setThreads(threadsFormatted)
+    } catch (err) {
+      console.error('Error loading threads:', err)
+      toast.error('Failed to load messages')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (activeThread) {

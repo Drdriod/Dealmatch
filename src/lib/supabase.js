@@ -12,11 +12,16 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 })
 
 // ─── Auth helpers ─────────────────────────────────────────
-export const signUp = async ({ email, password, fullName }) => {
+export const signUp = async ({ email, password, fullName, referralCode }) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    options: { 
+      data: { 
+        full_name: fullName,
+        referral_code: referralCode || null
+      } 
+    },
   })
   return { data, error }
 }
@@ -29,6 +34,22 @@ export const signIn = async ({ email, password }) => {
 export const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
+    options: { redirectTo: `${window.location.origin}/auth/callback` },
+  })
+  return { data, error }
+}
+
+export const signInWithFacebook = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'facebook',
+    options: { redirectTo: `${window.location.origin}/auth/callback` },
+  })
+  return { data, error }
+}
+
+export const signInWithApple = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
     options: { redirectTo: `${window.location.origin}/auth/callback` },
   })
   return { data, error }

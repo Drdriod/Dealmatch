@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
-import { signUp, signIn, signInWithGoogle, supabase } from '@/lib/supabase'
+import { signUp, signIn, signInWithGoogle, resetPassword, supabase } from '@/lib/supabase'
 import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
@@ -21,7 +21,7 @@ export default function AuthPage() {
   const [tab, setTab]           = useState(params.get('tab') === 'signup' ? 'signup' : 'signin')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading]   = useState(false)
-  const [form, setForm]         = useState({ fullName: '', email: '', password: '' })
+  const [form, setForm]         = useState({ fullName: '', email: '', password: '', referralCode: params.get('ref') || '' })
 
   // OTP state
   const [otpSent, setOtpSent]     = useState(false)
@@ -40,7 +40,8 @@ export default function AuthPage() {
     const { error } = await signUp({
       email:    form.email,
       password: form.password,
-      metadata: { full_name: form.fullName },
+      fullName: form.fullName,
+      referralCode: form.referralCode,
     })
     setLoading(false)
     if (error) return toast.error(error.message)
@@ -111,6 +112,29 @@ export default function AuthPage() {
   const handleGoogle = async () => {
     const { error } = await signInWithGoogle()
     if (error) toast.error(error.message)
+  }
+
+  const handleFacebook = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) toast.error(error.message)
+  }
+
+  const handleApple = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) toast.error(error.message)
+  }
+
+  const handleForgotPassword = async () => {
+    if (!form.email) return toast.error('Please enter your email address first')
+    const { error } = await resetPassword(form.email)
+    if (error) return toast.error(error.message)
+    toast.success('Password reset link sent to your email!')
   }
 
   // ─── OTP screen ───────────────────────────────────────
@@ -251,6 +275,14 @@ export default function AuthPage() {
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
+                  style={{color:'rgba(26,18,16,0.5)'}}>Referral Code (Optional)</label>
+                <input className="input" type="text" placeholder="e.g. DM123456"
+                  value={form.referralCode} onChange={set('referralCode')}
+                  style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
                   style={{color:'rgba(26,18,16,0.5)'}}>Password</label>
                 <div className="relative">
                   <input className="input pr-12" type={showPass ? 'text' : 'password'}
@@ -262,6 +294,14 @@ export default function AuthPage() {
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {tab === 'signin' && (
+                  <div className="flex justify-end mt-1">
+                    <button type="button" onClick={handleForgotPassword}
+                      className="text-xs font-semibold hover:underline" style={{color:'#C96A3A'}}>
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary w-full text-base py-4">
@@ -274,11 +314,25 @@ export default function AuthPage() {
                 or
               </div>
 
-              <button type="button" onClick={handleGoogle}
-                className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
-                style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
-                <GoogleIcon /> Continue with Google
-              </button>
+              <div className="grid grid-cols-1 gap-3">
+                <button type="button" onClick={handleGoogle}
+                  className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
+                  style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                  <GoogleIcon /> Continue with Google
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={handleFacebook}
+                    className="flex items-center justify-center gap-2 py-3 rounded-2xl border font-semibold text-xs transition-all hover:bg-white"
+                    style={{borderColor:'#E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                    🔵 Facebook
+                  </button>
+                  <button type="button" onClick={handleApple}
+                    className="flex items-center justify-center gap-2 py-3 rounded-2xl border font-semibold text-xs transition-all hover:bg-white"
+                    style={{borderColor:'#E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                    🍎 Apple
+                  </button>
+                </div>
+              </div>
 
               <p className="text-xs text-center leading-relaxed" style={{color:'rgba(26,18,16,0.3)'}}>
                 By signing up you agree to our{' '}
@@ -318,6 +372,14 @@ export default function AuthPage() {
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {tab === 'signin' && (
+                  <div className="flex justify-end mt-1">
+                    <button type="button" onClick={handleForgotPassword}
+                      className="text-xs font-semibold hover:underline" style={{color:'#C96A3A'}}>
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary w-full text-base py-4">
@@ -330,11 +392,25 @@ export default function AuthPage() {
                 or
               </div>
 
-              <button type="button" onClick={handleGoogle}
-                className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
-                style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
-                <GoogleIcon /> Continue with Google
-              </button>
+              <div className="grid grid-cols-1 gap-3">
+                <button type="button" onClick={handleGoogle}
+                  className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
+                  style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                  <GoogleIcon /> Continue with Google
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={handleFacebook}
+                    className="flex items-center justify-center gap-2 py-3 rounded-2xl border font-semibold text-xs transition-all hover:bg-white"
+                    style={{borderColor:'#E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                    🔵 Facebook
+                  </button>
+                  <button type="button" onClick={handleApple}
+                    className="flex items-center justify-center gap-2 py-3 rounded-2xl border font-semibold text-xs transition-all hover:bg-white"
+                    style={{borderColor:'#E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
+                    🍎 Apple
+                  </button>
+                </div>
+              </div>
             </form>
           )}
         </div>

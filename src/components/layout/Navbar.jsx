@@ -24,6 +24,7 @@ export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false)
   const [menuOpen, setMenuOpen]     = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const location = useLocation()
   const navigate  = useNavigate()
   const isHome    = location.pathname === '/'
@@ -34,7 +35,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => { setMenuOpen(false) }, [location])
+  useEffect(() => { 
+    setMenuOpen(false)
+    setIsNavigating(false)
+  }, [location])
 
   useEffect(() => {
     const handler = (e) => {
@@ -43,6 +47,14 @@ export default function Navbar() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  const go = (path) => {
+    setIsNavigating(true)
+    setMenuOpen(false)
+    navigate(path)
+    // Fallback reset if navigation fails or is slow
+    setTimeout(() => setIsNavigating(false), 2000)
+  }
 
   const handleSignOut = async () => {
     try {
@@ -69,6 +81,15 @@ export default function Navbar() {
         boxShadow: scrolled || !isHome ? '0 2px 20px rgba(26,18,16,0.06)' : 'none',
       }}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center gap-4">
+          {/* Navigation Loading Overlay */}
+          <AnimatePresence>
+            {isNavigating && (
+              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-white/60 backdrop-blur-sm">
+                <div className="w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full animate-spin" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Logo */}
           <Link to="/" className="font-display text-2xl font-black flex-shrink-0" style={{color:'#C96A3A'}}>
