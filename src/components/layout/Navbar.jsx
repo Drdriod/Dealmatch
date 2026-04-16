@@ -111,6 +111,11 @@ export default function Navbar() {
                   style={{color:'rgba(26,18,16,0.6)'}}>
                   <Heart size={15} /> Matches
                 </Link>
+                <Link to="/messages"
+                  className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl transition-all"
+                  style={{color:'rgba(26,18,16,0.6)'}}>
+                  💬 Messages
+                </Link>
                 <div className="relative group">
                   <button className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden"
                     style={{backgroundColor:'rgba(201,106,58,0.1)', border:'2px solid transparent'}}>
@@ -173,6 +178,7 @@ export default function Navbar() {
                 {isAuthenticated ? (
                   <>
                     <Link to="/matches"   className="text-base font-medium py-3 border-b" style={{color:'#1A1210', borderColor:'#E8DDD2'}}>My Matches</Link>
+                    <Link to="/messages"  className="text-base font-medium py-3 border-b" style={{color:'#1A1210', borderColor:'#E8DDD2'}}>💬 Messages</Link>
                     <Link to="/dashboard" className="text-base font-medium py-3 border-b" style={{color:'#1A1210', borderColor:'#E8DDD2'}}>Dashboard</Link>
                     <Link to="/profile"   className="text-base font-medium py-3 border-b" style={{color:'#1A1210', borderColor:'#E8DDD2'}}>Profile</Link>
                     <button onClick={handleSignOut} className="text-left text-base font-medium py-3" style={{color:'#C96A3A'}}>Sign Out</button>

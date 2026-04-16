@@ -1,121 +1,211 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Check, ArrowLeft, ArrowRight, X } from 'lucide-react'
+import { Check, ArrowLeft, ArrowRight, X, Upload } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import CommissionAgreement from '@/components/ui/CommissionAgreement'
 import toast from 'react-hot-toast'
 
 const STATES = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','Abuja (FCT)']
+const HOTEL_FEATURES  = ['Pool','Restaurant','Bar','Gym','Spa','Wifi','Generator','AC','Room Service','Conference Hall','Parking','Security','CCTV','Laundry','24hr Reception']
+const RENTAL_FEATURES = ['Furnished','Wifi','Generator','AC','Security','Parking','Borehole','Prepaid Meter','Pop Ceiling','Tiled Floor','Kitchen','Store','CCTV','Balcony']
+const WHATSAPP = '2347057392060'
 
-const HOTEL_FEATURES = ['Pool','Restaurant','Bar','Gym','Spa','Wifi','Generator','AC','Room Service','Conference Hall','Parking','Security','CCTV','Laundry']
-const RENTAL_FEATURES = ['Furnished','Wifi','Generator','AC','Security','Parking','Borehole','Prepaid Meter','Pop Ceiling','Tiled Floor','Kitchen','Store']
+async function uploadToStorage(file, userId, folder) {
+  const ext  = file.name.split('.').pop()
+  const path = `${userId}/${folder}_${Date.now()}.${ext}`
+  const { data, error } = await supabase.storage.from('property-images').upload(path, file, { upsert:false, contentType:file.type })
+  if (error) throw error
+  const { data: urlData } = supabase.storage.from('property-images').getPublicUrl(data.path)
+  return urlData.publicUrl
+}
 
 export default function ListRentalPage() {
-  const [params]    = useSearchParams()
-  const type        = params.get('type') || 'rental'
-  const isHotel     = type === 'hotel'
-  const { user }    = useAuth()
-  const navigate    = useNavigate()
-  const [step,      setStep]    = useState(0)
-  const [saving,    setSaving]  = useState(false)
-  const [saved,     setSaved]   = useState(false)
-  const [agreed,    setAgreed]  = useState(false)
-  const [form,      setForm]    = useState({
-    title: '', state: '', city: '', address: '',
-    price: '', description: '', features: [], images: [],
-    bedrooms: '', bathrooms: '', size_sqm: '',
+  const [params]  = useSearchParams()
+  const type      = params.get('type') || 'rental'
+  const isHotel   = type === 'hotel' || type === 'shortlet'
+  const { user }  = useAuth()
+  const navigate  = useNavigate()
+  const [step,    setStep]    = useState(0)
+  const [saving,  setSaving]  = useState(false)
+  const [saved,   setSaved]   = useState(false)
+  const [agreed,  setAgreed]  = useState(false)
+  const [progress,setProgress]= useState('')
+  const [form,    setForm]    = useState({
+    title:'', state:'', city:'', address:'',
+    price:'', description:'', features:[], images:[], video_url:'',
+    bedrooms:'', bathrooms:'', size_sqm:'', max_guests:'',
     category: type,
   })
 
-  const set    = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
-  const toggle = (k, v) => setForm(f => ({
-    ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v]
-  }))
-
-  const FEATURES = isHotel ? HOTEL_FEATURES : RENTAL_FEATURES
+  const set    = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
+  const toggle = (k, v) => setForm(f => ({ ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v] }))
 
   const steps = [
+    // Step 1: Basics
     {
-      title: 'Basics',
-      valid: () => !!form.title && !!form.state && !!form.city,
+      title: isHotel ? 'Hotel basics' : 'Rental basics',
+      valid: () => !!form.title && !!form.state && !!form.city && !!form.price,
       content: (
         <div className="space-y-4">
-          <h2 className="font-display text-2xl font-black" style={{ color: '#1A1210' }}>
-            {isHotel ? 'List Your Hotel 🏨' : 'List Your Rental 🔑'}
-          </h2>
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Property Name *</label>
-            <input className="input" type="text" placeholder={isHotel ? 'e.g. The Grand Uyo Hotel' : 'e.g. 3-Bed Apartment, Lekki'} value={form.title} onChange={set('title')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
+            <h2 className="font-display text-2xl font-black mb-1" style={{ color:'#1A1210' }}>
+              {isHotel ? 'List Your Hotel/Short-let 🏨' : 'List Your Rental Property 🔑'}
+            </h2>
+            <p className="text-sm" style={{ color:'#8A7E78' }}>A DealMatch agent will verify the property before it goes live.</p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          {/* Category selector for hotel types */}
+          {isHotel && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>State *</label>
-              <select className="select" value={form.state} onChange={set('state')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }}>
-                <option value="">Select...</option>
-                {STATES.map(s => <option key={s}>{s}</option>)}
-              </select>
+              <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Type *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[['hotel','🏨 Hotel'],['shortlet','🏠 Short-let']].map(([v,l]) => (
+                  <button key={v} type="button" onClick={() => setForm(f => ({ ...f, category:v }))}
+                    className="py-3 rounded-xl text-sm font-semibold border-2 transition-all"
+                    style={{ borderColor: form.category === v ? '#C96A3A' : '#E8DDD2', color: form.category === v ? '#C96A3A' : '#8A7E78', backgroundColor: form.category === v ? 'rgba(201,106,58,0.05)' : '#FFFFFF' }}>
+                    {l}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>City *</label>
-              <input className="input" type="text" placeholder="City/Area" value={form.city} onChange={set('city')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
+          )}
+
+          {[
+            { label: isHotel ? 'Property Name *' : 'Property Title *', key:'title', type:'text', placeholder: isHotel ? 'e.g. The Grand Uyo Hotel' : 'e.g. 3-Bed Apartment, Lekki' },
+            { label:'City / Area *', key:'city', type:'text', placeholder:'e.g. Uyo, Akwa Ibom' },
+            { label:'Full Address',  key:'address', type:'text', placeholder:'Street address (for agent verification)' },
+            { label: isHotel ? 'Starting Price/Night (₦) *' : 'Annual Rent (₦) *', key:'price', type:'number', placeholder:'e.g. 35000' },
+          ].map(f => (
+            <div key={f.key}>
+              <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>{f.label}</label>
+              <input type={f.type} value={form[f.key]} onChange={set(f.key)} placeholder={f.placeholder}
+                className="input text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
             </div>
-          </div>
+          ))}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Address</label>
-            <input className="input" type="text" placeholder="Full address" value={form.address} onChange={set('address')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>{isHotel ? 'Starting Price / Night (₦)' : 'Annual Rent (₦)'} *</label>
-            <input className="input" type="number" placeholder="e.g. 35000" value={form.price} onChange={set('price')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>State *</label>
+            <select className="select" value={form.state} onChange={set('state')} style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }}>
+              <option value="">Select state...</option>
+              {STATES.map(s => <option key={s}>{s}</option>)}
+            </select>
           </div>
         </div>
       ),
     },
+    // Step 2: Details + Photos (simplified — single step for hotel/shortlet)
     {
-      title: 'Details',
-      valid: () => !!form.size_sqm,
+      title: 'Details & Photos',
+      valid: () => !!form.size_sqm && form.images.length > 0,
       content: (
         <div className="space-y-4">
-          <h2 className="font-display text-2xl font-black" style={{ color: '#1A1210' }}>Details & Features ✨</h2>
-          {!isHotel && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Bedrooms</label>
-                <input className="input" type="number" min="0" placeholder="0" value={form.bedrooms} onChange={set('bedrooms')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Bathrooms</label>
-                <input className="input" type="number" min="0" placeholder="0" value={form.bathrooms} onChange={set('bathrooms')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
-              </div>
+          <h2 className="font-display text-2xl font-black mb-1" style={{ color:'#1A1210' }}>Details & Photos 📸</h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            {!isHotel && (
+              <>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Bedrooms</label>
+                  <input type="number" min="0" value={form.bedrooms} onChange={set('bedrooms')} placeholder="0"
+                    className="input text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Bathrooms</label>
+                  <input type="number" min="0" value={form.bathrooms} onChange={set('bathrooms')} placeholder="0"
+                    className="input text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
+                </div>
+              </>
+            )}
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Size (sqm) *</label>
+              <input type="number" min="0" value={form.size_sqm} onChange={set('size_sqm')} placeholder="e.g. 120"
+                className="input text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
             </div>
-          )}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Size (sqm) *</label>
-            <input className="input" type="number" min="0" placeholder="e.g. 120" value={form.size_sqm} onChange={set('size_sqm')} style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
+            {isHotel && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Max Guests</label>
+                <input type="number" min="1" value={form.max_guests} onChange={set('max_guests')} placeholder="e.g. 4"
+                  className="input text-sm" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
+              </div>
+            )}
           </div>
+
+          {/* Features */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-3 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Features & Amenities</label>
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Features & Amenities</label>
             <div className="flex flex-wrap gap-2">
-              {FEATURES.map(f => (
+              {(isHotel ? HOTEL_FEATURES : RENTAL_FEATURES).map(f => (
                 <button key={f} type="button" onClick={() => toggle('features', f)}
                   className="px-3 py-2 rounded-full text-xs font-medium border-2 transition-all"
-                  style={{
-                    borderColor:     form.features.includes(f) ? '#C96A3A' : '#E8DDD2',
-                    backgroundColor: form.features.includes(f) ? '#C96A3A' : '#FFFFFF',
-                    color:           form.features.includes(f) ? '#FFFFFF'  : '#5C4A3A',
-                  }}>
+                  style={{ borderColor: form.features.includes(f) ? '#C96A3A' : '#E8DDD2', backgroundColor: form.features.includes(f) ? '#C96A3A' : '#FFFFFF', color: form.features.includes(f) ? '#FFFFFF' : '#5C4A3A' }}>
                   {f}
                 </button>
               ))}
             </div>
           </div>
+
+          {/* Photos — multiple upload */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color: 'rgba(26,18,16,0.5)' }}>Description</label>
-            <textarea className="input resize-none" rows={5}
-              placeholder="Describe the property, location, access, unique features..."
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>
+              Photos * {form.images.length > 0 ? <span style={{ color:'#7A9E7E' }}>({form.images.length} added ✓)</span> : <span style={{ color:'#C96A3A' }}>required</span>}
+            </label>
+            <div className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all"
+              style={{ borderColor: form.images.length > 0 ? '#7A9E7E' : '#C96A3A', backgroundColor: form.images.length > 0 ? 'rgba(122,158,126,0.04)' : 'rgba(201,106,58,0.03)' }}
+              onClick={() => document.getElementById('rental-img-input').click()}>
+              <div className="text-3xl mb-2">{form.images.length > 0 ? '✅' : '📷'}</div>
+              <p className="text-sm font-semibold" style={{ color:'#1A1210' }}>
+                {form.images.length > 0 ? `${form.images.length} photos added — tap to add more` : 'Tap to upload photos'}
+              </p>
+              <p className="text-xs mt-1" style={{ color:'#8A7E78' }}>JPG, PNG · Up to 10MB each · Add as many as possible</p>
+              <input id="rental-img-input" type="file" accept="image/*" multiple className="hidden"
+                onChange={e => {
+                  const files = Array.from(e.target.files)
+                  const newImgs = files.map((f, i) => ({ url: URL.createObjectURL(f), is_primary: form.images.length === 0 && i === 0, file: f }))
+                  setForm(f2 => ({ ...f2, images: [...f2.images, ...newImgs] }))
+                  toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} added!`)
+                }} />
+            </div>
+            {form.images.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {form.images.map((img, i) => (
+                  <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border-2"
+                    style={{ borderColor: img.is_primary ? '#C96A3A' : '#E8DDD2' }}>
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    {img.is_primary && <div className="absolute bottom-0 left-0 right-0 text-center text-[9px] font-bold py-0.5" style={{ backgroundColor:'rgba(201,106,58,0.9)', color:'#FFFFFF' }}>Main</div>}
+                    <button className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor:'rgba(0,0,0,0.6)' }}
+                      onClick={() => setForm(f => ({ ...f, images: f.images.filter((_,j) => j !== i) }))}>
+                      <X size={9} color="white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Video */}
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Video Tour (optional — strongly recommended)</label>
+            <input type="url" value={form.video_url} onChange={set('video_url')}
+              placeholder="Paste YouTube or Loom link, or upload below"
+              className="input text-sm mb-2" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
+            {!form.video_url && (
+              <div className="border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer"
+                style={{ borderColor:'#E8DDD2' }}
+                onClick={() => document.getElementById('rental-video-input').click()}>
+                <p className="text-xs" style={{ color:'#8A7E78' }}>Or tap to upload a video file (MP4, MOV)</p>
+                <input id="rental-video-input" type="file" accept="video/*" className="hidden"
+                  onChange={e => { if (e.target.files[0]) { setForm(f => ({ ...f, video_url: URL.createObjectURL(e.target.files[0]) })); toast.success('Video added!') } }} />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Description</label>
+            <textarea className="input resize-none" rows={4}
+              placeholder={`Describe the ${isHotel ? 'hotel/short-let' : 'property'} — location, access, nearby landmarks, unique features...`}
               value={form.description} onChange={set('description')}
-              style={{ backgroundColor: '#FFFFFF', color: '#1A1210' }} />
+              style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
           </div>
         </div>
       ),
@@ -127,71 +217,112 @@ export default function ListRentalPage() {
 
   const handleSubmit = async () => {
     if (!agreed) { toast.error('Please agree to the commission terms'); return }
-    if (!user?.id) { toast.error('You must be logged in'); return }
+    if (!user?.id) { toast.error('Please sign in first'); return }
     setSaving(true)
-    const { error } = await supabase.from('properties').insert({
-      title:        form.title,
-      property_type: isHotel ? 'hotel' : 'apartment',
-      listing_type: isHotel ? 'Hotel' : 'Rental',
-      price:        Number(form.price) || 0,
-      state:        form.state,
-      city:         form.city,
-      address:      form.address || null,
-      bedrooms:     form.bedrooms  ? Number(form.bedrooms)  : null,
-      bathrooms:    form.bathrooms ? Number(form.bathrooms) : null,
-      size_sqm:     Number(form.size_sqm) || 0,
-      description:  form.description,
-      features:     form.features,
-      seller_id:    user.id,
-      status:       'pending_review',
-      category:     type,
-    })
-    setSaving(false)
-    if (error) { toast.error('Could not publish: ' + error.message); return }
-    setSaved(true)
+    try {
+      setProgress('Uploading photos...')
+      const uploadedImages = []
+      for (let i = 0; i < form.images.length; i++) {
+        const img = form.images[i]
+        setProgress(`Uploading photo ${i+1} of ${form.images.length}...`)
+        if (img.url.startsWith('blob:') && img.file) {
+          try {
+            const url = await uploadToStorage(img.file, user.id, 'photo')
+            uploadedImages.push({ url, is_primary: img.is_primary })
+          } catch { toast(`Photo ${i+1} skipped`, { icon:'⚠️' }) }
+        } else {
+          uploadedImages.push({ url: img.url, is_primary: img.is_primary })
+        }
+      }
+
+      setProgress('Publishing...')
+      const { error } = await supabase.from('properties').insert({
+        title:        form.title,
+        property_type: isHotel ? form.category : 'apartment',
+        listing_type: isHotel ? (form.category === 'hotel' ? 'Hotel' : 'Short-let') : 'Rental',
+        price:        Number(form.price) || 0,
+        state:        form.state,
+        city:         form.city,
+        address:      form.address || null,
+        bedrooms:     form.bedrooms  ? Number(form.bedrooms)  : null,
+        bathrooms:    form.bathrooms ? Number(form.bathrooms) : null,
+        size_sqm:     Number(form.size_sqm) || 0,
+        max_guests:   form.max_guests ? Number(form.max_guests) : null,
+        description:  form.description,
+        features:     form.features,
+        images:       uploadedImages,
+        video_url:    form.video_url || null,
+        seller_id:    user.id,
+        status:       'pending_review',  // agent must verify before going live
+        category:     form.category,
+      })
+
+      if (error) throw error
+
+      // Notify DealMatch admin to assign agent
+      const msg = encodeURIComponent(
+        `🏨 *New ${isHotel ? 'Hotel/Short-let' : 'Rental'} Listing — DealMatch*\n\n` +
+        `Title: ${form.title}\nLocation: ${form.city}, ${form.state}\n${form.address ? `Address: ${form.address}\n` : ''}` +
+        `Category: ${form.category}\nPrice: ₦${Number(form.price).toLocaleString()}\n\n` +
+        `Please assign a field agent to verify this property.`
+      )
+      window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank')
+
+      setSaved(true)
+    } catch (err) {
+      toast.error('Could not publish: ' + err.message)
+    } finally {
+      setSaving(false)
+      setProgress('')
+    }
   }
 
   if (saved) return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#FFFAF5' }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor:'#FFFAF5' }}>
       <div className="w-full max-w-sm text-center">
         <div className="text-6xl mb-5">🎉</div>
-        <h1 className="font-display text-3xl font-black mb-2" style={{ color: '#1A1210' }}>Listing Submitted!</h1>
-        <p className="text-sm leading-relaxed mb-8" style={{ color: '#8A7E78' }}>
-          Your {isHotel ? 'hotel' : 'rental'} listing is under review. We'll approve it within 24 hours.
+        <h1 className="font-display text-3xl font-black mb-2" style={{ color:'#1A1210' }}>Listing Submitted!</h1>
+        <p className="text-sm leading-relaxed mb-3" style={{ color:'#8A7E78' }}>
+          Your {isHotel ? 'hotel/short-let' : 'rental'} has been submitted. A DealMatch agent will verify the property and it will go live within 24–48 hours.
         </p>
-        <button onClick={() => navigate('/landlord')} className="btn-primary w-full py-4">Go to Dashboard →</button>
+        <p className="text-xs mb-8" style={{ color:'#C96A3A' }}>You'll receive a WhatsApp notification once approved.</p>
+        <div className="space-y-3">
+          <button onClick={() => navigate('/landlord')} className="btn-primary w-full py-4">Go to Dashboard →</button>
+          <button onClick={() => { setSaved(false); setStep(0); setForm({ title:'', state:'', city:'', address:'', price:'', description:'', features:[], images:[], video_url:'', bedrooms:'', bathrooms:'', size_sqm:'', max_guests:'', category: type }) }}
+            className="w-full py-3 rounded-2xl text-sm border" style={{ borderColor:'#E8DDD2', color:'#5C4A3A' }}>
+            List Another Property
+          </button>
+        </div>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen pt-24 pb-16" style={{ backgroundColor: '#FFFAF5' }}>
+    <div className="min-h-screen pt-24 pb-16" style={{ backgroundColor:'#FFFAF5' }}>
       <div className="max-w-lg mx-auto px-4">
         <div className="mb-8">
-          <p className="text-sm mb-4" style={{ color: '#8A7E78' }}>Step {step + 1} of {steps.length} — {current.title}</p>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(26,18,16,0.08)' }}>
-            <div className="h-full rounded-full transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%`, backgroundColor: '#C96A3A' }} />
+          <p className="text-sm mb-4" style={{ color:'#8A7E78' }}>Step {step + 1} of {steps.length} — {current.title}</p>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor:'rgba(26,18,16,0.08)' }}>
+            <div className="h-full rounded-full transition-all" style={{ width:`${((step+1)/steps.length)*100}%`, backgroundColor:'#C96A3A' }} />
           </div>
         </div>
         <div>{current.content}</div>
-        {isLast && <div className="mt-6"><CommissionAgreement category={isHotel ? 'hotel' : 'rental'} agreed={agreed} onChange={setAgreed} /></div>}
+        {isLast && <div className="mt-6"><CommissionAgreement category={isHotel ? (form.category === 'hotel' ? 'hotel' : 'shortlet') : 'rental'} agreed={agreed} onChange={setAgreed} /></div>}
+        {saving && progress && (
+          <div className="mt-4 p-3 rounded-xl flex items-center gap-3" style={{ backgroundColor:'rgba(201,106,58,0.08)', border:'1px solid rgba(201,106,58,0.2)' }}>
+            <div style={{ width:14, height:14, borderRadius:'50%', flexShrink:0, border:'2px solid rgba(201,106,58,0.2)', borderTop:'2px solid #C96A3A', animation:'spin 0.8s linear infinite' }} />
+            <p className="text-xs font-medium" style={{ color:'#C96A3A' }}>{progress}</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        )}
         <div className="flex gap-3 mt-8">
-          {step > 0 && (
-            <button onClick={() => setStep(s => s - 1)} disabled={saving}
-              className="flex items-center gap-2 px-5 py-4 rounded-2xl text-sm font-semibold border"
-              style={{ borderColor: '#E8DDD2', color: '#8A7E78', backgroundColor: '#FFFFFF' }}>
-              <ArrowLeft size={16} />
-            </button>
-          )}
+          {step > 0 && <button onClick={() => setStep(s => s-1)} disabled={saving} className="px-5 py-4 rounded-2xl text-sm font-semibold border" style={{ borderColor:'#E8DDD2', color:'#8A7E78', backgroundColor:'#FFFFFF' }}>←</button>}
           <button
-            onClick={() => {
-              if (!current.valid()) { toast.error('Please complete required fields'); return }
-              if (isLast) handleSubmit()
-              else setStep(s => s + 1)
-            }}
+            onClick={() => { if (!current.valid()) { toast.error('Please complete required fields'); return } if (isLast) handleSubmit(); else setStep(s => s+1) }}
             disabled={saving || !current.valid()}
-            className="btn-primary flex-1 py-4 flex items-center justify-center gap-2">
-            {saving ? 'Publishing...' : isLast ? 'Submit Listing ✓' : <>Continue <ArrowRight size={16} /></>}
+            className="btn-primary flex-1 py-4 flex items-center justify-center gap-2"
+            style={{ opacity: current.valid() ? 1 : 0.5 }}>
+            {saving ? (progress || 'Publishing...') : isLast ? 'Submit for Verification ✓' : <>Continue <ArrowRight size={16} /></>}
           </button>
         </div>
       </div>
