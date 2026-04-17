@@ -35,6 +35,7 @@ const TermsPage           = lazy(() => import('@/pages/Legal/TermsPage'))
 const MortgagePage        = lazy(() => import('@/pages/Mortgage/MortgagePage'))
 const VerificationPage    = lazy(() => import('@/pages/Verification/VerificationPage'))
 const MessagesPage        = lazy(() => import('@/pages/Messages/MessagesPage'))
+const LenderDashboardPage = lazy(() => import('@/pages/LenderDashboard/LenderDashboardPage'))
 
 const LoadingScreen = () => (
   <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(145deg,#0f0f0f 0%,#1a1210 50%,#0f0f0f 100%)', position:'relative', overflow:'hidden' }}>
@@ -159,7 +160,9 @@ export default function App() {
               <Route path="/profile"      element={<ProtectedRoute><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
               <Route path="/admin/*"      element={<ProtectedRoute><AppShell showFooter={false}><AdminPage /></AppShell></ProtectedRoute>} />
               <Route path="/availability" element={<ProtectedRoute><AppShell><AvailabilityPage /></AppShell></ProtectedRoute>} />
-              <Route path="/verify"       element={<ProtectedRoute><AppShell showFooter={false}><VerificationPage /></AppShell></ProtectedRoute>} />
+              <Route path="/verify"       element={<ProtectedRoute requireOnboarding={false}><AppShell showNav={false} showFooter={false} showWhatsApp={false}><VerifyIdentityPage /></AppShell></ProtectedRoute>} />
+              <Route path="/lender-dashboard" element={<ProtectedRoute><AppShell showFooter={false}><LenderDashboardPage /></AppShell></ProtectedRoute>} />
+              <Route path="/agent-verify" element={<ProtectedRoute><AppShell showFooter={false}><VerificationPage /></AppShell></ProtectedRoute>} />
 
               {/* ── 404 ─────────────────────────────── */}
               <Route path="*" element={

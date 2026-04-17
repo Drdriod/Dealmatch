@@ -80,7 +80,10 @@ export const getProfile = async (userId) => {
 export const updateProfile = async (userId, updates) => {
   const { data, error } = await supabase
     .from('profiles')
-    .update({ ...updates, updated_at: new Date().toISOString() })
+    .update({ 
+      ...updates, 
+      updated_at: new Date().toISOString() 
+    })
     .eq('id', userId)
     .select()
     .single()

@@ -142,9 +142,19 @@ function ApplicationForm({ lender, onClose }) {
         status:           'pending',
       })
 
+      // Fetch the newly created application to get the ticket_id
+      const { data: newApp } = await supabase
+        .from('mortgage_applications')
+        .select('ticket_id')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
       // Notify via WhatsApp
       const msg = encodeURIComponent(
         `🏠 *Mortgage Application: DealMatch*\n\n` +
+        `Ticket ID: ${newApp?.ticket_id || 'PENDING'}\n` +
         `Applicant: ${form.full_name}\nPhone: ${form.phone}\n` +
         (form.email ? `Email: ${form.email}\n` : '') +
         `Lender Preferred: ${lender?.name || 'Any'}\n` +
@@ -156,7 +166,7 @@ function ApplicationForm({ lender, onClose }) {
         `State: ${form.property_state || 'Not specified'}`
       )
       window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank')
-      setSubmitted(true)
+      setSubmitted(newApp?.ticket_id || true)
     } catch (err) {
       toast.error('Submission failed. Please try again.')
     } finally {
@@ -187,6 +197,10 @@ function ApplicationForm({ lender, onClose }) {
           <div className="p-8 text-center">
             <div className="text-5xl mb-4">🏠</div>
             <h3 className="font-display font-black text-xl mb-2" style={{ color:'#1A1210' }}>Application Submitted!</h3>
+            <div className="p-3 rounded-2xl mb-4" style={{ backgroundColor:'rgba(201,106,58,0.08)', border:'1px solid rgba(201,106,58,0.2)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color:'#C96A3A' }}>Your Ticket ID</p>
+              <p className="font-display font-black text-2xl" style={{ color:'#1A1210' }}>{typeof submitted === 'string' ? submitted : 'PENDING'}</p>
+            </div>
             <p className="text-sm mb-6" style={{ color:'#8A7E78' }}>
               DealMatch will connect you with a verified lender within 24 hours. You'll be contacted at <strong>{form.phone}</strong>.
             </p>

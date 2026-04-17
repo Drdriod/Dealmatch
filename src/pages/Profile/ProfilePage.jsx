@@ -22,11 +22,15 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [signingOut,setSigningOut]= useState(false)
   const [form, setForm] = useState({
-    full_name: profile?.full_name || '',
-    phone:     profile?.phone     || '',
-    bio:       profile?.bio       || '',
-    state:     profile?.state     || '',
-    city:      profile?.city      || '',
+    full_name:      profile?.full_name      || '',
+    phone:          profile?.phone          || '',
+    bio:            profile?.bio            || '',
+    state:          profile?.state          || '',
+    city:           profile?.city           || '',
+    bank_name:      profile?.bank_name      || '',
+    account_number: profile?.account_number || '',
+    account_name:   profile?.account_name   || '',
+    routing_number: profile?.routing_number || '',
   })
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -141,11 +145,15 @@ export default function ProfilePage() {
           <div className="rounded-2xl p-4 mb-5 border-2"
             style={{ backgroundColor:'rgba(212,168,83,0.06)', borderColor:'rgba(212,168,83,0.3)' }}>
             <p className="font-semibold text-sm mb-1" style={{ color:'#1A1210' }}>🔒 Complete Verification</p>
-            <p className="text-xs leading-relaxed" style={{ color:'#8A7E78' }}>
+            <p className="text-xs leading-relaxed mb-3" style={{ color:'#8A7E78' }}>
               {verificationLevel === 'none'
                 ? 'Upload a profile photo to access listing and buying features.'
                 : 'Photo uploaded! Live face check unlocks full buy/sell access.'}
             </p>
+            <Link to="/verify" className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold transition-all"
+              style={{ backgroundColor:'#C96A3A', color:'#FFFFFF' }}>
+              <Shield size={14} /> Verify My Profile
+            </Link>
           </div>
         )}
 
@@ -169,30 +177,77 @@ export default function ProfilePage() {
           </div>
 
           <div className="p-4 space-y-4">
-            {[
-              { label:'Full Name',  key:'full_name', type:'text',  placeholder:'Your full name' },
-              { label:'Phone',      key:'phone',     type:'tel',   placeholder:'+234 800 000 0000' },
-              { label:'City',       key:'city',      type:'text',  placeholder:'Your city' },
-              { label:'Bio',        key:'bio',        type:'text',  placeholder:'A short bio...' },
-            ].map(field => (
-              <div key={field.key}>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label:'Full Name',  key:'full_name', type:'text',  placeholder:'Your full name' },
+                { label:'Phone',      key:'phone',     type:'tel',   placeholder:'+234 800 000 0000' },
+              ].map(field => (
+                <div key={field.key}>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block"
+                    style={{ color:'rgba(26,18,16,0.5)' }}>{field.label}</label>
+                  <input type={field.type} value={form[field.key]} onChange={set(field.key)}
+                    disabled={!editing} placeholder={field.placeholder} className="input text-sm"
+                    style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }} />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block"
-                  style={{ color:'rgba(26,18,16,0.5)' }}>{field.label}</label>
-                <input type={field.type} value={form[field.key]} onChange={set(field.key)}
-                  disabled={!editing} placeholder={field.placeholder} className="input text-sm"
+                  style={{ color:'rgba(26,18,16,0.5)' }}>State</label>
+                <select value={form.state} onChange={set('state')} disabled={!editing}
+                  className="select text-sm"
+                  style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }}>
+                  <option value="">Select state...</option>
+                  {NIGERIAN_STATES.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block"
+                  style={{ color:'rgba(26,18,16,0.5)' }}>City</label>
+                <input type="text" value={form.city} onChange={set('city')}
+                  disabled={!editing} placeholder="Your city" className="input text-sm"
                   style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }} />
               </div>
-            ))}
+            </div>
             <div>
               <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block"
-                style={{ color:'rgba(26,18,16,0.5)' }}>State</label>
-              <select value={form.state} onChange={set('state')} disabled={!editing}
-                className="select text-sm"
-                style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }}>
-                <option value="">Select state...</option>
-                {NIGERIAN_STATES.map(s => <option key={s}>{s}</option>)}
-              </select>
+                style={{ color:'rgba(26,18,16,0.5)' }}>Bio</label>
+              <textarea value={form.bio} onChange={set('bio')}
+                disabled={!editing} placeholder="A short bio..." className="input text-sm min-h-[80px] py-2"
+                style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }} />
             </div>
+          </div>
+        </div>
+
+        {/* Bank Details Section */}
+        <div className="rounded-2xl border mb-5" style={{ backgroundColor:'#FFFAF5', borderColor:'#E8DDD2' }}>
+          <div className="p-4 border-b flex items-center justify-between" style={{ borderColor:'#E8DDD2' }}>
+            <h3 className="font-display font-black text-base" style={{ color:'#1A1210' }}>Withdrawal Bank Details 🏦</h3>
+          </div>
+          <div className="p-4 space-y-4">
+            <p className="text-[10px] uppercase font-bold tracking-widest" style={{ color:'#C96A3A' }}>For Referral Payouts</p>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label:'Bank Name',      key:'bank_name',      type:'text', placeholder:'e.g. Zenith Bank' },
+                { label:'Account Name',   key:'account_name',   type:'text', placeholder:'Name on account' },
+                { label:'Account Number', key:'account_number', type:'text', placeholder:'10 digits' },
+                { label:'Routing/SWIFT',  key:'routing_number', type:'text', placeholder:'Optional' },
+              ].map(field => (
+                <div key={field.key}>
+                  <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block"
+                    style={{ color:'rgba(26,18,16,0.5)' }}>{field.label}</label>
+                  <input type={field.type} value={form[field.key]} onChange={set(field.key)}
+                    disabled={!editing} placeholder={field.placeholder} className="input text-sm"
+                    style={{ backgroundColor: editing ? '#FFFFFF' : 'rgba(26,18,16,0.03)', color:'#1A1210' }} />
+                </div>
+              ))}
+            </div>
+            {!editing && !profile?.account_number && (
+              <div className="p-3 rounded-xl text-[11px] leading-relaxed" style={{ backgroundColor:'rgba(201,106,58,0.05)', color:'#C96A3A' }}>
+                💡 Click "Edit" above to add your bank details so you can withdraw your referral earnings.
+              </div>
+            )}
           </div>
         </div>
 

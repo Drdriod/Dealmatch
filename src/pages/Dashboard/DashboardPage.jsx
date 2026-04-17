@@ -109,16 +109,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Verification alert */}
-        {verificationLevel === 'none' && (
-          <Link to="/profile"
+        {verificationLevel !== 'live' && (
+          <Link to="/verify"
             className="flex items-center gap-3 p-4 rounded-2xl mb-5 border-2"
             style={{backgroundColor:'rgba(201,106,58,0.06)', borderColor:'rgba(201,106,58,0.3)'}}>
-            <span className="text-2xl">⚠️</span>
+            <span className="text-2xl">{verificationLevel === 'none' ? '⚠️' : '📸'}</span>
             <div className="flex-1">
-              <p className="text-sm font-semibold" style={{color:'#1A1210'}}>Complete your verification</p>
-              <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>Upload photo + live check to list and buy properties</p>
+              <p className="text-sm font-semibold" style={{color:'#1A1210'}}>
+                {verificationLevel === 'none' ? 'Complete your verification' : 'Finish Live Verification'}
+              </p>
+              <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>
+                {verificationLevel === 'none' 
+                  ? 'Upload photo + live check to list and buy properties' 
+                  : 'Photo uploaded! Complete the live check to unlock full access'}
+              </p>
             </div>
-            <ArrowRight size={16} style={{color:'#C96A3A', flexShrink:0}} />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold" style={{backgroundColor:'#C96A3A', color:'#FFFFFF'}}>
+              Verify Now <ArrowRight size={12} />
+            </div>
           </Link>
         )}
 
