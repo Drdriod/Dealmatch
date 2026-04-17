@@ -279,15 +279,83 @@ function ApplicationForm({ lender, onClose }) {
 
 // ─── Main Page ────────────────────────────────────────────────
 export default function MortgagePage() {
+  const { user } = useAuth()
   const [applyLender, setApplyLender] = useState(null)
   const [openFaq,     setOpenFaq]     = useState(null)
   const [showCalc,    setShowCalc]    = useState(false)
+  const [myApps,      setMyApps]      = useState([])
+  const [loadingApps, setLoadingApps] = useState(false)
+
+  useEffect(() => {
+    if (user) loadMyApplications()
+  }, [user])
+
+  const loadMyApplications = async () => {
+    setLoadingApps(true)
+    const { data } = await supabase
+      .from('mortgage_applications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    if (data) setMyApps(data)
+    setLoadingApps(false)
+  }
+
+  const STATUS_CONFIG = {
+    pending:    { label: 'New',         color: '#C96A3A', bg: 'rgba(201,106,58,0.1)' },
+    processing: { label: 'Processing',  color: '#5B8DEF', bg: 'rgba(91,141,239,0.1)' },
+    reviewing:  { label: 'Reviewing',   color: '#D4A853', bg: 'rgba(212,168,83,0.1)' },
+    approved:   { label: 'Approved',    color: '#7A9E7E', bg: 'rgba(122,158,126,0.1)' },
+    declined:   { label: 'Declined',    color: '#E31E25', bg: 'rgba(227,30,37,0.1)' },
+    finished:   { label: 'Finished',    color: '#1A1210', bg: 'rgba(26,18,16,0.1)' },
+    on_hold:    { label: 'On Hold',     color: '#8A7E78', bg: 'rgba(138,126,120,0.1)' },
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-16" style={{ backgroundColor:'#FAF6F0' }}>
 
+      {/* My Applications Section */}
+      {user && myApps.length > 0 && (
+        <section className="pt-24 pb-10 px-6" style={{ backgroundColor:'#F5EDE0' }}>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display font-black text-2xl" style={{ color:'#1A1210' }}>My Applications 📋</h2>
+              <button onClick={loadMyApplications} className="text-xs font-bold" style={{ color:'#C96A3A' }}>Refresh</button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {myApps.map(app => (
+                <div key={app.id} className="p-5 rounded-3xl border bg-white flex flex-col gap-3" style={{ borderColor:'#E8DDD2' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded bg-[#1A1210] text-white">
+                      {app.ticket_id}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      style={{ backgroundColor: STATUS_CONFIG[app.status]?.bg, color: STATUS_CONFIG[app.status]?.color }}>
+                      {STATUS_CONFIG[app.status]?.label}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold" style={{ color:'#1A1210' }}>
+                      ₦{Number(app.property_value).toLocaleString()} Mortgage
+                    </p>
+                    <p className="text-[10px]" style={{ color:'#8A7E78' }}>
+                      Applied on {new Date(app.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {app.notes && (
+                    <div className="p-3 rounded-xl text-[11px] leading-relaxed" style={{ backgroundColor:'rgba(26,18,16,0.03)', color:'#5C4A3A' }}>
+                      <strong>Update:</strong> {app.notes}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Hero */}
-      <section className="py-20 px-6 relative overflow-hidden" style={{ backgroundColor:'#1A1210' }}>
+      <section className={`${user && myApps.length > 0 ? 'py-16' : 'py-20'} px-6 relative overflow-hidden`} style={{ backgroundColor:'#1A1210' }}>
         <div className="absolute inset-0 pointer-events-none" style={{ background:'radial-gradient(ellipse 60% 80% at 30% 60%, rgba(201,106,58,0.2) 0%, transparent 60%)' }} />
         <div className="max-w-4xl mx-auto relative text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6"
