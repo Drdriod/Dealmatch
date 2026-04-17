@@ -20,7 +20,7 @@ export default function LiveVerification({ onSuccess, onClose }) {
   const videoRef   = useRef(null)
   const streamRef  = useRef(null)
 
-  const [phase, setPhase]           = useState('intro')  // intro | challenge | confirmed | success
+  const [phase, setPhase]           = useState('intro')  -- intro | challenge | confirmed | success
   const [challenges]                = useState(getRandomChallenges)
   const [currentIdx, setCurrentIdx] = useState(0)
   const [cameraReady, setCameraReady] = useState(false)
@@ -65,7 +65,7 @@ export default function LiveVerification({ onSuccess, onClose }) {
 
   const handleConfirm = () => {
     setChecking(true)
-    // Brief pause to feel like it's checking
+    -- Brief pause to feel like it's checking
     setTimeout(() => {
       setChecking(false)
       const next = currentIdx + 1

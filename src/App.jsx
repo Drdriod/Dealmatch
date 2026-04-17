@@ -1,41 +1,42 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { lazyWithRetry } from '@/lib/lazyLoad'
 
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import InstallPrompt from '@/components/ui/InstallPrompt'
 
-const HomePage            = lazy(() => import('@/pages/Home/HomePage'))
-const AuthPage            = lazy(() => import('@/pages/Auth/AuthPage'))
-const OnboardingPage      = lazy(() => import('@/pages/Onboarding/OnboardingPage'))
-const VerifyIdentityPage  = lazy(() => import('@/pages/PostVerification/VerifyIdentityPage'))
-const DashboardPage       = lazy(() => import('@/pages/Dashboard/DashboardPage'))
-const BrowsePage          = lazy(() => import('@/pages/Browse/BrowsePage'))
-const MatchesPage         = lazy(() => import('@/pages/Matches/MatchesPage'))
-const PropertyPage        = lazy(() => import('@/pages/Property/PropertyPage'))
-const ProfessionalsPage   = lazy(() => import('@/pages/Professionals/ProfessionalsPage'))
-const LandlordDashboardPage = lazy(() => import('@/pages/LandlordDashboard/LandlordDashboardPage'))
-const ProfilePage         = lazy(() => import('@/pages/Profile/ProfilePage'))
-const AdminPage           = lazy(() => import('@/pages/Admin/AdminPage'))
-const AuthCallback        = lazy(() => import('@/pages/Auth/AuthCallback'))
-const RentalsPage         = lazy(() => import('@/pages/Rentals/RentalsPage'))
-const HotelsPage          = lazy(() => import('@/pages/Hotels/HotelsPage'))
-const ListRentalPage      = lazy(() => import('@/pages/Rentals/ListRentalPage'))
-const EarnPage            = lazy(() => import('@/pages/Earn/EarnPage'))
-const EscrowPage          = lazy(() => import('@/pages/Escrow/EscrowPage'))
-const TenancyPage         = lazy(() => import('@/pages/Tenancy/TenancyPage'))
-const ListPropertyPage    = lazy(() => import('@/pages/List/ListPropertyPage'))
-const AvailabilityPage    = lazy(() => import('@/pages/Availability/AvailabilityPage'))
-const PrivacyPage         = lazy(() => import('@/pages/Legal/PrivacyPage'))
-const TermsPage           = lazy(() => import('@/pages/Legal/TermsPage'))
-const MortgagePage        = lazy(() => import('@/pages/Mortgage/MortgagePage'))
-const VerificationPage    = lazy(() => import('@/pages/Verification/VerificationPage'))
-const MessagesPage        = lazy(() => import('@/pages/Messages/MessagesPage'))
-const LenderDashboardPage = lazy(() => import('@/pages/LenderDashboard/LenderDashboardPage'))
+const HomePage            = lazyWithRetry(() => import('@/pages/Home/HomePage'))
+const AuthPage            = lazyWithRetry(() => import('@/pages/Auth/AuthPage'))
+const OnboardingPage      = lazyWithRetry(() => import('@/pages/Onboarding/OnboardingPage'))
+const VerifyIdentityPage  = lazyWithRetry(() => import('@/pages/PostVerification/VerifyIdentityPage'))
+const DashboardPage       = lazyWithRetry(() => import('@/pages/Dashboard/DashboardPage'))
+const BrowsePage          = lazyWithRetry(() => import('@/pages/Browse/BrowsePage'))
+const MatchesPage         = lazyWithRetry(() => import('@/pages/Matches/MatchesPage'))
+const PropertyPage        = lazyWithRetry(() => import('@/pages/Property/PropertyPage'))
+const ProfessionalsPage   = lazyWithRetry(() => import('@/pages/Professionals/ProfessionalsPage'))
+const LandlordDashboardPage = lazyWithRetry(() => import('@/pages/LandlordDashboard/LandlordDashboardPage'))
+const ProfilePage         = lazyWithRetry(() => import('@/pages/Profile/ProfilePage'))
+const AdminPage           = lazyWithRetry(() => import('@/pages/Admin/AdminPage'))
+const AuthCallback        = lazyWithRetry(() => import('@/pages/Auth/AuthCallback'))
+const RentalsPage         = lazyWithRetry(() => import('@/pages/Rentals/RentalsPage'))
+const HotelsPage          = lazyWithRetry(() => import('@/pages/Hotels/HotelsPage'))
+const ListRentalPage      = lazyWithRetry(() => import('@/pages/Rentals/ListRentalPage'))
+const EarnPage            = lazyWithRetry(() => import('@/pages/Earn/EarnPage'))
+const EscrowPage          = lazyWithRetry(() => import('@/pages/Escrow/EscrowPage'))
+const TenancyPage         = lazyWithRetry(() => import('@/pages/Tenancy/TenancyPage'))
+const ListPropertyPage    = lazyWithRetry(() => import('@/pages/List/ListPropertyPage'))
+const AvailabilityPage    = lazyWithRetry(() => import('@/pages/Availability/AvailabilityPage'))
+const PrivacyPage         = lazyWithRetry(() => import('@/pages/Legal/PrivacyPage'))
+const TermsPage           = lazyWithRetry(() => import('@/pages/Legal/TermsPage'))
+const MortgagePage        = lazyWithRetry(() => import('@/pages/Mortgage/MortgagePage'))
+const VerificationPage    = lazyWithRetry(() => import('@/pages/Verification/VerificationPage'))
+const MessagesPage        = lazyWithRetry(() => import('@/pages/Messages/MessagesPage'))
+const LenderDashboardPage = lazyWithRetry(() => import('@/pages/LenderDashboard/LenderDashboardPage'))
 
 const LoadingScreen = () => (
   <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'linear-gradient(145deg,#0f0f0f 0%,#1a1210 50%,#0f0f0f 100%)', position:'relative', overflow:'hidden' }}>
@@ -156,13 +157,12 @@ export default function App() {
               <Route path="/messages"     element={<ProtectedRoute><AppShell showFooter={false}><MessagesPage /></AppShell></ProtectedRoute>} />
               <Route path="/dashboard"    element={<ProtectedRoute><AppShell showFooter={false}><DashboardPage /></AppShell></ProtectedRoute>} />
               <Route path="/landlord"     element={<ProtectedRoute><AppShell showFooter={false}><LandlordDashboardPage /></AppShell></ProtectedRoute>} />
+              <Route path="/lender"       element={<ProtectedRoute><AppShell showFooter={false}><LenderDashboardPage /></AppShell></ProtectedRoute>} />
               <Route path="/list"         element={<ProtectedRoute><AppShell showFooter={false}><ListPropertyPage /></AppShell></ProtectedRoute>} />
               <Route path="/profile"      element={<ProtectedRoute><AppShell><ProfilePage /></AppShell></ProtectedRoute>} />
               <Route path="/admin/*"      element={<ProtectedRoute><AppShell showFooter={false}><AdminPage /></AppShell></ProtectedRoute>} />
               <Route path="/availability" element={<ProtectedRoute><AppShell><AvailabilityPage /></AppShell></ProtectedRoute>} />
-              <Route path="/verify"       element={<ProtectedRoute requireOnboarding={false}><AppShell showNav={false} showFooter={false} showWhatsApp={false}><VerifyIdentityPage /></AppShell></ProtectedRoute>} />
-              <Route path="/lender-dashboard" element={<ProtectedRoute><AppShell showFooter={false}><LenderDashboardPage /></AppShell></ProtectedRoute>} />
-              <Route path="/agent-verify" element={<ProtectedRoute><AppShell showFooter={false}><VerificationPage /></AppShell></ProtectedRoute>} />
+              <Route path="/verify"       element={<ProtectedRoute><AppShell showFooter={false}><VerificationPage /></AppShell></ProtectedRoute>} />
 
               {/* ── 404 ─────────────────────────────── */}
               <Route path="*" element={

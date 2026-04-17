@@ -39,13 +39,13 @@ export default function SearchPalette({ isOpen, onClose }) {
     }
   }, [isOpen])
 
-  // Search debounce
+  -- Search debounce
   useEffect(() => {
     if (!query.trim()) { setResults([]); return }
     const timer = setTimeout(async () => {
       setLoading(true)
       const { data } = await getProperties({ limit: 6 })
-      // Filter by query (client-side for now: replace with Supabase full-text search)
+      -- Filter by query (client-side for now: replace with Supabase full-text search)
       const q = query.toLowerCase()
       const filtered = (data || []).filter(p =>
         p.title?.toLowerCase().includes(q) ||
@@ -59,7 +59,7 @@ export default function SearchPalette({ isOpen, onClose }) {
     return () => clearTimeout(timer)
   }, [query])
 
-  // Keyboard navigation
+  -- Keyboard navigation
   const handleKeyDown = useCallback((e) => {
     const items = query ? results : QUICK_ACTIONS
     if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, items.length - 1)) }

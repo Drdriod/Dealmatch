@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-// Premium real estate background
-// Deep architectural grid + floating property silhouettes + subtle gold particles
-// Mature, serious, aspirational: like a luxury property brochure
+-- Premium real estate background
+-- Deep architectural grid + floating property silhouettes + subtle gold particles
+-- Mature, serious, aspirational: like a luxury property brochure
 export default function HeroBackground() {
   const canvasRef = useRef(null)
 
@@ -23,7 +23,7 @@ export default function HeroBackground() {
     const W = () => canvas.width
     const H = () => canvas.height
 
-    // ── Particles: gold dust floating upward ──────────
+    -- ── Particles: gold dust floating upward ──────────
     const particles = Array.from({ length: 40 }, () => ({
       x:     Math.random() * 1200,
       y:     Math.random() * 900,
@@ -34,7 +34,7 @@ export default function HeroBackground() {
       pulse: Math.random() * Math.PI * 2,
     }))
 
-    // ── Connection lines: subtle property chain ───────
+    -- ── Connection lines: subtle property chain ───────
     const nodes = Array.from({ length: 5 }, (_, i) => ({
       x:     W() * (0.1 + i * 0.2),
       y:     H() * (0.25 + Math.sin(i * 1.3) * 0.2),
@@ -45,20 +45,20 @@ export default function HeroBackground() {
     }))
 
     const drawGrid = () => {
-      // Subtle perspective grid: like architectural blueprint
+      -- Subtle perspective grid: like architectural blueprint
       const gridAlpha = 0.04
       ctx.strokeStyle = `rgba(201,106,58,${gridAlpha})`
       ctx.lineWidth   = 0.5
 
       const spacing = 60
-      // Horizontal lines
+      -- Horizontal lines
       for (let y = 0; y < H(); y += spacing) {
         ctx.beginPath()
         ctx.moveTo(0, y)
         ctx.lineTo(W(), y)
         ctx.stroke()
       }
-      // Vertical lines
+      -- Vertical lines
       for (let x = 0; x < W(); x += spacing) {
         ctx.beginPath()
         ctx.moveTo(x, 0)
@@ -66,7 +66,7 @@ export default function HeroBackground() {
         ctx.stroke()
       }
 
-      // Diagonal accent lines: top right corner
+      -- Diagonal accent lines: top right corner
       ctx.strokeStyle = `rgba(212,168,83,0.05)`
       ctx.lineWidth = 1
       for (let i = 0; i < 8; i++) {
@@ -85,7 +85,7 @@ export default function HeroBackground() {
         p.pulse += 0.02
         const alpha = p.alpha * (0.7 + Math.sin(p.pulse) * 0.3)
 
-        // Reset when off screen
+        -- Reset when off screen
         if (p.y < -10) {
           p.y = H() + 10
           p.x = Math.random() * W()
@@ -106,7 +106,7 @@ export default function HeroBackground() {
     }
 
     const drawConnections = () => {
-      // Move nodes gently
+      -- Move nodes gently
       nodes.forEach(n => {
         n.x += n.vx
         n.y += n.vy
@@ -116,7 +116,7 @@ export default function HeroBackground() {
         if (n.y < 40 || n.y > H() - 40) n.vy *= -1
       })
 
-      // Draw connections between nearby nodes
+      -- Draw connections between nearby nodes
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i]
@@ -141,7 +141,7 @@ export default function HeroBackground() {
           ctx.setLineDash([])
         }
 
-        // Draw node dot
+        -- Draw node dot
         const n     = nodes[i]
         const scale = 1 + Math.sin(n.pulse) * 0.15
         const alpha = 0.25 + Math.sin(n.pulse) * 0.1
@@ -162,7 +162,7 @@ export default function HeroBackground() {
       }
     }
 
-    // Large subtle circle accents: architectural feel
+    -- Large subtle circle accents: architectural feel
     const drawCircleAccents = () => {
       const accents = [
         { x: W() * 0.85, y: H() * 0.15, r: 180, color: 'rgba(212,168,83,0.04)' },
@@ -176,7 +176,7 @@ export default function HeroBackground() {
         ctx.lineWidth   = 1
         ctx.stroke()
 
-        // Inner ring
+        -- Inner ring
         ctx.beginPath()
         ctx.arc(a.x, a.y, a.r * 0.6, 0, Math.PI * 2)
         ctx.strokeStyle = a.color
