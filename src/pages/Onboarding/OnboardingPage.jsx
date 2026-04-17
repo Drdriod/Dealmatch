@@ -46,9 +46,14 @@ const GOALS_BY_ROLE = {
   ],
 }
 
-const ALL_STATES = ['Lagos','Abuja','Rivers','Akwa Ibom','Delta','Oyo','Kano','Anambra',
-  'Enugu','Cross River','Edo','Imo','Abia','Ondo','Osun','Ekiti','Kwara','Benue',
-  'Nasarawa','Plateau','Taraba','Gombe','Bauchi','Adamawa','Borno','Yobe']
+const ALL_STATES = [
+  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 
+  'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT (Abuja)', 'Gombe', 
+  'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 
+  'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 
+  'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+]
+
 const PROP_TYPES  = ['Land','Apartment','Duplex','Detached House','Terrace','Commercial','Hotel','Short-let']
 
 export default function OnboardingPage() {
@@ -146,7 +151,7 @@ export default function OnboardingPage() {
             <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>
               {data.role === 'landlord' || data.role === 'seller' ? 'Primary States of Operation' : 'Preferred States'}
             </label>
-            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1 border rounded-xl" style={{ borderColor: '#E8DDD2' }}>
               {ALL_STATES.map(s => (
                 <button key={s} onClick={() => toggleArr('preferred_states', s)}
                   className="px-3 py-2 rounded-full text-xs font-medium border-2 transition-all"
@@ -155,6 +160,7 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
+            <p className="text-[10px] mt-2" style={{ color:'#8A7E78' }}>You can select multiple states.</p>
           </div>
 
           {(data.role === 'buyer' || data.role === 'renter' || data.role === 'investor') && (
@@ -185,18 +191,23 @@ export default function OnboardingPage() {
                     style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all"
-                style={{ borderColor: data.needs_financing ? '#C96A3A' : '#E8DDD2', backgroundColor: data.needs_financing ? 'rgba(201,106,58,0.05)' : '#FFFFFF' }}
-                onClick={() => set('needs_financing', !data.needs_financing)}>
-                <div className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all"
-                  style={{ borderColor: data.needs_financing ? '#C96A3A' : '#E8DDD2', backgroundColor: data.needs_financing ? '#C96A3A' : '#FFFFFF' }}>
-                  {data.needs_financing && <Check size={10} color="white" />}
+              
+              {/* Mortgage financing option - only show for buyer/investor and specific goals */}
+              {(data.role === 'buyer' || data.role === 'investor') && 
+               (data.property_goal === 'buy_home' || data.property_goal === 'commercial' || data.property_goal === 'investment') && (
+                <div className="flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all"
+                  style={{ borderColor: data.needs_financing ? '#C96A3A' : '#E8DDD2', backgroundColor: data.needs_financing ? 'rgba(201,106,58,0.05)' : '#FFFFFF' }}
+                  onClick={() => set('needs_financing', !data.needs_financing)}>
+                  <div className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                    style={{ borderColor: data.needs_financing ? '#C96A3A' : '#E8DDD2', backgroundColor: data.needs_financing ? '#C96A3A' : '#FFFFFF' }}>
+                    {data.needs_financing && <Check size={10} color="white" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color:'#1A1210' }}>I need mortgage financing</p>
+                    <p className="text-xs" style={{ color:'#8A7E78' }}>We'll match you with lenders</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color:'#1A1210' }}>I need mortgage financing</p>
-                  <p className="text-xs" style={{ color:'#8A7E78' }}>We'll match you with lenders</p>
-                </div>
-              </div>
+              )}
             </>
           )}
 
