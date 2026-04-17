@@ -114,15 +114,15 @@ export default function VerifyIdentityPage() {
       if (faceErr) throw faceErr
       const { data: faceUrl } = supabase.storage.from('avatars').getPublicUrl(facePath)
 
-      // Update profile
+      // Update profile: Submit for review instead of self-verifying
       await supabase.from('profiles').update({
         id_doc_url:       idUrl.publicUrl,
         id_doc_type:      idType,
         face_video_url:   faceUrl.publicUrl,
-        is_photo_verified: true,
-        is_live_verified:  true, // Auto-verify for now or set to pending
-        live_verified_at:  new Date().toISOString(),
-        avatar_url:        faceUrl.publicUrl, // use face capture as avatar
+        // SECURITY: Verification flags must be set by admin/backend
+        // is_photo_verified: true, 
+        // is_live_verified:  true,
+        avatar_url:        faceUrl.publicUrl, 
         updated_at:        new Date().toISOString(),
       }).eq('id', user.id)
 
