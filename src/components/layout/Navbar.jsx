@@ -9,14 +9,14 @@ import { ThemeToggle } from '@/context/ThemeContext'
 import toast from 'react-hot-toast'
 
 const NAV_LINKS = [
-  { to:'/browse',        label:'Buy' },
-  { to:'/rentals',       label:'Rent' },
-  { to:'/hotels',        label:'Hotels' },
-  { to:'/mortgage',      label:'Mortgage 🏠', highlight: false, special: false },
-  { to:'/list',          label:'Sell', highlight: true },
-  { to:'/professionals', label:'For Pros' },
-  { to:'/escrow',        label:'Escrow 🔒', highlight: false, special: false },
-  { to:'/earn',          label:'Earn 💰', highlight: false, special: true },
+  { to:'/browse',        label:'Buy', group: 'primary' },
+  { to:'/rentals',       label:'Rent', group: 'primary' },
+  { to:'/hotels',        label:'Hotels', group: 'primary' },
+  { to:'/mortgage',      label:'Mortgage 🏠', group: 'secondary', highlight: false, special: false },
+  { to:'/professionals', label:'For Pros', group: 'secondary' },
+  { to:'/escrow',        label:'Escrow 🔒', group: 'secondary', highlight: false, special: false },
+  { to:'/list',          label:'Sell', highlight: true, group: 'cta' },
+  { to:'/earn',          label:'Earn 💰', highlight: false, special: true, group: 'secondary' },
 ]
 
 export default function Navbar() {
@@ -109,19 +109,51 @@ export default function Navbar() {
           </button>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-4 ml-auto">
-            {NAV_LINKS.map(link => (
+          <div className="hidden md:flex items-center gap-6 ml-auto">
+            {/* Primary nav group */}
+            <div className="flex items-center gap-1">
+              {NAV_LINKS.filter(l => l.group === 'primary').map(link => (
+                <Link key={link.to} to={link.to}
+                  className="text-sm font-medium transition-all hover:opacity-80 px-4 py-2 rounded-lg"
+                  style={{
+                    color: 'rgba(26,18,16,0.7)',
+                    backgroundColor: 'transparent',
+                    fontWeight: 500,
+                  }}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Secondary nav group */}
+            <div className="flex items-center gap-1">
+              {NAV_LINKS.filter(l => l.group === 'secondary').map(link => (
+                <Link key={link.to} to={link.to}
+                  className="text-sm font-medium transition-all hover:opacity-80 px-4 py-2 rounded-lg"
+                  style={{
+                    color: link.special ? '#D4A853' : 'rgba(26,18,16,0.65)',
+                    backgroundColor: 'transparent',
+                    fontWeight: link.special ? 600 : 500,
+                  }}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* CTA button */}
+            {NAV_LINKS.filter(l => l.group === 'cta').map(link => (
               <Link key={link.to} to={link.to}
-                className="text-sm font-medium transition-all hover:opacity-90 px-3 py-1.5 rounded-full"
+                className="text-sm font-semibold transition-all hover:shadow-lg px-5 py-2 rounded-lg"
                 style={{
-                  color: link.highlight ? '#FFFFFF' : link.special ? '#D4A853' : 'rgba(26,18,16,0.65)',
-                  backgroundColor: link.highlight ? '#C96A3A' : 'transparent',
-                  fontWeight: link.highlight || link.special ? 600 : 500,
-                  boxShadow: link.highlight ? '0 4px 12px rgba(201,106,58,0.3)' : 'none',
+                  color: '#FFFFFF',
+                  backgroundColor: '#C96A3A',
+                  boxShadow: '0 4px 12px rgba(201,106,58,0.3)',
                 }}>
                 {link.label}
               </Link>
             ))}
+
+            <div className="w-px h-6" style={{backgroundColor:'rgba(26,18,16,0.1)'}} />
 
             <ThemeToggle />
 

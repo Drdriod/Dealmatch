@@ -29,12 +29,14 @@ export const signUp = async ({ email, password, fullName, referralCode }) => {
     email,
     password,
     options: { 
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
       data: { 
         full_name: fullName,
         referral_code: referralCode || null
       } 
     },
   })
+// Note: Email confirmation relies on Supabase SMTP settings and RESEND_API_KEY being correctly configured in the environment.
   return { data, error }
 }
 
@@ -51,21 +53,7 @@ export const signInWithGoogle = async () => {
   return { data, error }
 }
 
-export const signInWithFacebook = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'facebook',
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
-  })
-  return { data, error }
-}
 
-export const signInWithApple = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
-  })
-  return { data, error }
-}
 
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut()
