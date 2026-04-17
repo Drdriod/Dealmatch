@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Check, Users, TrendingUp, DollarSign, Briefcase, Star } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
-import { initializePaystackPayment, PROFESSIONAL_PLANS, generateReference } from '@/lib/paystack'
+import { initializePaystackPayment, generateReference } from '@/lib/paystack'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 

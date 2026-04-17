@@ -53,12 +53,14 @@ export default function Footer() {
         </div>
       </div>
       {/* Legal links */}
-      <div className="border-t mt-8 pt-6 flex flex-wrap justify-center gap-4 text-xs" style={{borderColor:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.3)'}}>
+        <div className="border-t mt-8 pt-6 flex flex-wrap justify-center gap-4 text-xs" style={{borderColor:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.3)'}}>
         <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
         <span>·</span>
         <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
         <span>·</span>
         <a href="/escrow" className="hover:text-white transition-colors">Escrow</a>
+        <span>·</span>
+        <a href="/earn" className="hover:text-white transition-colors">Earn 💰</a>
         <span>·</span>
         <span>© {new Date().getFullYear()} DealMatch</span>
       </div>

@@ -13,6 +13,18 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 // ─── Auth helpers ─────────────────────────────────────────
 export const signUp = async ({ email, password, fullName, referralCode }) => {
+  // Validate referral code if provided
+  if (referralCode) {
+    const { data: refProfile, error: refError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('referral_code', referralCode)
+      .maybeSingle()
+
+    if (refError) return { data: null, error: refError }
+    if (!refProfile) return { data: null, error: { message: 'Invalid referral code. Please check and try again.' } }
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
