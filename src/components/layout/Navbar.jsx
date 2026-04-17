@@ -183,11 +183,11 @@ export default function Navbar() {
                       <p className="text-xs font-semibold truncate" style={{color:'#1A1210'}}>{profile?.full_name || 'Your Account'}</p>
                       <p className="text-xs truncate mt-0.5 capitalize" style={{color:'#8A7E78'}}>{profile?.role}</p>
                     </div>
-	                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}>📊 Dashboard</Link>
-	                    {(profile?.role === 'lender' || profile?.role === 'admin') && (
-	                      <Link to="/lender-dashboard" className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}>🏦 Lender Dashboard</Link>
-	                    )}
-	                    <Link to="/profile"   className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}><User size={14} /> Profile</Link>
+		                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}>📊 Dashboard</Link>
+		                    {(profile?.role === 'lender' || profile?.role === 'admin') && (
+		                      <Link to="/lender-dashboard" className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}>🏦 Lender Dashboard</Link>
+		                    )}
+		                    <Link to="/profile"   className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#5C4A3A'}}><User size={14} /> Profile</Link>
                     <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[#F0E6D6]" style={{color:'#C96A3A'}}>
                       <LogOut size={14} /> Sign Out
                     </button>

@@ -48,6 +48,12 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
+    // Basic validation for bank details if any field is filled
+    if (form.account_number && !/^\d{10}$/.test(form.account_number)) {
+      toast.error('Account number must be exactly 10 digits');
+      return;
+    }
+    
     setSaving(true)
     const { error } = await updateUserProfile(form)
     setSaving(false)
