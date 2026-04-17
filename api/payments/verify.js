@@ -1,4 +1,4 @@
-// api/payments/verify.js — Vercel serverless
+// api/payments/verify.js: Vercel serverless
 import { redisRateLimit } from '../../src/lib/redis.js'
 
 export default async function handler(req, res) {
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  // ✅ SECURITY: Redis rate limit — 10 payment verifications/min per IP
+  // ✅ SECURITY: Redis rate limit: 10 payment verifications/min per IP
   const rl = await redisRateLimit(req, 'pay_verify', 10, 60)
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' })
 

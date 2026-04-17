@@ -43,7 +43,7 @@ export default function CommissionAgreement({ category = 'sale', agreed, onChang
             I agree to DealMatch's success commission
           </p>
           <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>
-            <strong style={{color:'#C96A3A'}}>{c.label}</strong> — {c.example}
+            <strong style={{color:'#C96A3A'}}>{c.label}</strong> : {c.example}
           </p>
         </div>
       </label>

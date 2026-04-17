@@ -1,5 +1,5 @@
 -- ============================================================
--- DealMatch — Master Database Schema
+-- DealMatch: Master Database Schema
 -- Run this FIRST in Supabase SQL Editor
 -- ============================================================
 
@@ -328,8 +328,8 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', tru
 INSERT INTO storage.buckets (id, name, public) VALUES ('property-images', 'property-images', true) ON CONFLICT (id) DO NOTHING;
 
 CREATE POLICY "Avatar public read"   ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY "Avatar user upload"   ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
-CREATE POLICY "Avatar user update"   ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+CREATE POLICY "Avatar user upload"   ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid():text = (storage.foldername(name))[1]);
+CREATE POLICY "Avatar user update"   ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid():text = (storage.foldername(name))[1]);
 CREATE POLICY "Property img public"  ON storage.objects FOR SELECT USING (bucket_id = 'property-images');
 CREATE POLICY "Property img upload"  ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'property-images' AND auth.uid() IS NOT NULL);
 

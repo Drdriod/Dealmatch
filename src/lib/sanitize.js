@@ -1,4 +1,4 @@
-// Input sanitization — prevents XSS and injection attacks
+// Input sanitization: prevents XSS and injection attacks
 
 // Strip HTML tags and dangerous characters from text input
 export const sanitizeText = (str) => {
@@ -11,7 +11,7 @@ export const sanitizeText = (str) => {
     .substring(0, 1000)             // Max 1000 chars
 }
 
-// Sanitize phone numbers — digits, +, spaces, dashes only
+// Sanitize phone numbers: digits, +, spaces, dashes only
 export const sanitizePhone = (str) => {
   if (!str || typeof str !== 'string') return ''
   return str.replace(/[^\d+\s\-()]/g, '').substring(0, 20)

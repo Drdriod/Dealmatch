@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 const WHATSAPP = '2347057392060'
 
 const HOW_IT_WORKS = [
-  { icon:'💰', title:'Tenant deposits funds',  desc:'Tenant pays rent or deposit to DealMatch — not directly to landlord.' },
+  { icon:'💰', title:'Tenant deposits funds',  desc:'Tenant pays rent or deposit to DealMatch: not directly to landlord.' },
   { icon:'🔍', title:'DealMatch verifies',     desc:'We confirm property details, agreement terms, and both parties have signed.' },
   { icon:'🏠', title:'Tenant moves in',        desc:'Once tenant confirms successful move-in, funds are released to landlord.' },
   { icon:'✅', title:'Deal complete',          desc:'DealMatch deducts commission and sends balance to landlord within 24 hours.' },
@@ -53,7 +53,7 @@ function EscrowRequestModal({ onClose }) {
       },
       onSuccess: response => {
         const msg = encodeURIComponent(
-          '✅ *Escrow Payment Received — DealMatch*\n\n' +
+          '✅ *Escrow Payment Received: DealMatch*\n\n' +
           'Property: ' + form.property_title + '\n' +
           'Tenant: ' + form.tenant_name + ' | ' + form.tenant_phone + '\n' +
           'Landlord: ' + form.landlord_name + ' | ' + form.landlord_phone + '\n' +
@@ -203,7 +203,7 @@ function EscrowRequestModal({ onClose }) {
 // ─── Main Page ────────────────────────────────────────────
 export default function EscrowPage() {
   const [showModal, setShowModal] = useState(false)
-  // ✅ FIX: removed showCrypto from here — it was causing crash (undefined var in render)
+  // ✅ FIX: removed showCrypto from here: it was causing crash (undefined var in render)
 
   return (
     <div className="min-h-screen pt-20 pb-16" style={{ backgroundColor:'#F5EDE0' }}>
@@ -222,7 +222,7 @@ export default function EscrowPage() {
               DealMatch Escrow 🔒
             </h1>
             <p className="text-sm leading-relaxed mb-6" style={{ color:'rgba(255,255,255,0.55)' }}>
-              Pay your rent or property deposit safely through DealMatch. Funds held securely — released only after you confirm everything is in order.
+              Pay your rent or property deposit safely through DealMatch. Funds held securely: released only after you confirm everything is in order.
             </p>
             <button onClick={() => setShowModal(true)} className="btn-primary px-8 py-4 text-base">
               Request Escrow Protection →

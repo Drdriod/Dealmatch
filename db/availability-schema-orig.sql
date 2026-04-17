@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 // Premium real estate background
 // Deep architectural grid + floating property silhouettes + subtle gold particles
-// Mature, serious, aspirational — like a luxury property brochure
+// Mature, serious, aspirational: like a luxury property brochure
 export default function HeroBackground() {
   const canvasRef = useRef(null)
 
@@ -23,7 +23,7 @@ export default function HeroBackground() {
     const W = () => canvas.width
     const H = () => canvas.height
 
-    // ── Particles — gold dust floating upward ──────────
+    // ── Particles: gold dust floating upward ──────────
     const particles = Array.from({ length: 40 }, () => ({
       x:     Math.random() * 1200,
       y:     Math.random() * 900,
@@ -34,7 +34,7 @@ export default function HeroBackground() {
       pulse: Math.random() * Math.PI * 2,
     }))
 
-    // ── Connection lines — subtle property chain ───────
+    // ── Connection lines: subtle property chain ───────
     const nodes = Array.from({ length: 5 }, (_, i) => ({
       x:     W() * (0.1 + i * 0.2),
       y:     H() * (0.25 + Math.sin(i * 1.3) * 0.2),
@@ -45,7 +45,7 @@ export default function HeroBackground() {
     }))
 
     const drawGrid = () => {
-      // Subtle perspective grid — like architectural blueprint
+      // Subtle perspective grid: like architectural blueprint
       const gridAlpha = 0.04
       ctx.strokeStyle = `rgba(201,106,58,${gridAlpha})`
       ctx.lineWidth   = 0.5
@@ -66,7 +66,7 @@ export default function HeroBackground() {
         ctx.stroke()
       }
 
-      // Diagonal accent lines — top right corner
+      // Diagonal accent lines: top right corner
       ctx.strokeStyle = `rgba(212,168,83,0.05)`
       ctx.lineWidth = 1
       for (let i = 0; i < 8; i++) {
@@ -162,7 +162,7 @@ export default function HeroBackground() {
       }
     }
 
-    // Large subtle circle accents — architectural feel
+    // Large subtle circle accents: architectural feel
     const drawCircleAccents = () => {
       const accents = [
         { x: W() * 0.85, y: H() * 0.15, r: 180, color: 'rgba(212,168,83,0.04)' },

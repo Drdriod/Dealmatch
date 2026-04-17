@@ -5,7 +5,7 @@ import posthog from 'posthog-js'
 import App from './App'
 import './index.css'
 
-// ─── Sentry — error tracking ───────────────────────────────
+// ─── Sentry: error tracking ───────────────────────────────
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -26,7 +26,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   })
 }
 
-// ─── PostHog — product analytics ──────────────────────────
+// ─── PostHog: product analytics ──────────────────────────
 if (import.meta.env.VITE_POSTHOG_KEY) {
   posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
     api_host:         import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',

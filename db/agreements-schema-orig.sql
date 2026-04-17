@@ -176,7 +176,7 @@ export default function DealAgreement({ property, category = 'sale', onClose, on
 
     // Notify DealMatch via WhatsApp regardless of DB error
     const msg = encodeURIComponent(
-      `🔔 *New Deal Agreement Signed — DealMatch*\n\n` +
+      `🔔 *New Deal Agreement Signed: DealMatch*\n\n` +
       `Property: *${property.title}*\n` +
       `Location: ${property.city}, ${property.state}\n` +
       `Price: ₦${Number(property.price).toLocaleString()}${property.price_period ? '/'+property.price_period : ''}\n` +
@@ -299,7 +299,7 @@ export default function DealAgreement({ property, category = 'sale', onClose, on
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{color:'rgba(26,18,16,0.5)'}}>
-                  Digital Signature — Type your full name *
+                  Digital Signature: Type your full name *
                 </label>
                 <input className="input font-display text-lg" type="text"
                   placeholder="e.g. John Adebayo Okafor"
@@ -364,7 +364,7 @@ export default function DealAgreement({ property, category = 'sale', onClose, on
                 DealMatch has been notified and will contact you within 24 hours to connect you with the lister and arrange the next steps.
               </p>
               <p className="text-xs font-semibold mb-6" style={{color:'#C96A3A'}}>
-                Check your WhatsApp — a confirmation has been sent to DealMatch.
+                Check your WhatsApp: a confirmation has been sent to DealMatch.
               </p>
 
               <div className="p-4 rounded-2xl mb-6 text-left"

@@ -1,5 +1,5 @@
 /**
- * Upstash Redis client — caching + server-side rate limiting
+ * Upstash Redis client: caching + server-side rate limiting
  * Used in Vercel API routes (server-side only)
  * Client-side uses clientRateLimit() from security.js
  */
@@ -10,7 +10,7 @@ export async function redisRateLimit(req, key, max = 20, windowSec = 60) {
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN
 
   if (!upstashUrl || !upstashToken) {
-    // No Redis configured — allow through (fail open)
+    // No Redis configured: allow through (fail open)
     return { allowed: true, remaining: max }
   }
 

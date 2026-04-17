@@ -93,7 +93,7 @@ export default function ListRentalPage() {
         </div>
       ),
     },
-    // Step 2: Details + Photos (simplified — single step for hotel/shortlet)
+    // Step 2: Details + Photos (simplified: single step for hotel/shortlet)
     {
       title: 'Details & Photos',
       valid: () => !!form.size_sqm && form.images.length > 0,
@@ -144,7 +144,7 @@ export default function ListRentalPage() {
             </div>
           </div>
 
-          {/* Photos — multiple upload */}
+          {/* Photos: multiple upload */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>
               Photos * {form.images.length > 0 ? <span style={{ color:'#7A9E7E' }}>({form.images.length} added ✓)</span> : <span style={{ color:'#C96A3A' }}>required</span>}
@@ -154,7 +154,7 @@ export default function ListRentalPage() {
               onClick={() => document.getElementById('rental-img-input').click()}>
               <div className="text-3xl mb-2">{form.images.length > 0 ? '✅' : '📷'}</div>
               <p className="text-sm font-semibold" style={{ color:'#1A1210' }}>
-                {form.images.length > 0 ? `${form.images.length} photos added — tap to add more` : 'Tap to upload photos'}
+                {form.images.length > 0 ? `${form.images.length} photos added: tap to add more` : 'Tap to upload photos'}
               </p>
               <p className="text-xs mt-1" style={{ color:'#8A7E78' }}>JPG, PNG · Up to 10MB each · Add as many as possible</p>
               <input id="rental-img-input" type="file" accept="image/*" multiple className="hidden"
@@ -185,7 +185,7 @@ export default function ListRentalPage() {
 
           {/* Video */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Video Tour (optional — strongly recommended)</label>
+            <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Video Tour (optional: strongly recommended)</label>
             <input type="url" value={form.video_url} onChange={set('video_url')}
               placeholder="Paste YouTube or Loom link, or upload below"
               className="input text-sm mb-2" style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
@@ -203,7 +203,7 @@ export default function ListRentalPage() {
           <div>
             <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Description</label>
             <textarea className="input resize-none" rows={4}
-              placeholder={`Describe the ${isHotel ? 'hotel/short-let' : 'property'} — location, access, nearby landmarks, unique features...`}
+              placeholder={`Describe the ${isHotel ? 'hotel/short-let' : 'property'} : location, access, nearby landmarks, unique features...`}
               value={form.description} onChange={set('description')}
               style={{ backgroundColor:'#FFFFFF', color:'#1A1210' }} />
           </div>
@@ -261,7 +261,7 @@ export default function ListRentalPage() {
 
       // Notify DealMatch admin to assign agent
       const msg = encodeURIComponent(
-        `🏨 *New ${isHotel ? 'Hotel/Short-let' : 'Rental'} Listing — DealMatch*\n\n` +
+        `🏨 *New ${isHotel ? 'Hotel/Short-let' : 'Rental'} Listing: DealMatch*\n\n` +
         `Title: ${form.title}\nLocation: ${form.city}, ${form.state}\n${form.address ? `Address: ${form.address}\n` : ''}` +
         `Category: ${form.category}\nPrice: ₦${Number(form.price).toLocaleString()}\n\n` +
         `Please assign a field agent to verify this property.`
@@ -301,7 +301,7 @@ export default function ListRentalPage() {
     <div className="min-h-screen pt-24 pb-16" style={{ backgroundColor:'#FFFAF5' }}>
       <div className="max-w-lg mx-auto px-4">
         <div className="mb-8">
-          <p className="text-sm mb-4" style={{ color:'#8A7E78' }}>Step {step + 1} of {steps.length} — {current.title}</p>
+          <p className="text-sm mb-4" style={{ color:'#8A7E78' }}>Step {step + 1} of {steps.length} : {current.title}</p>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor:'rgba(26,18,16,0.08)' }}>
             <div className="h-full rounded-full transition-all" style={{ width:`${((step+1)/steps.length)*100}%`, backgroundColor:'#C96A3A' }} />
           </div>

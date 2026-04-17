@@ -25,7 +25,7 @@ export default function AuthCallback() {
         .single()
 
       if (!profile) {
-        // Brand new user — create basic profile then send to onboarding
+        // Brand new user: create basic profile then send to onboarding
         const urlParams = new URLSearchParams(window.location.search)
         const referredBy = user.user_metadata?.referred_by || urlParams.get('ref')
         
@@ -48,7 +48,7 @@ export default function AuthCallback() {
         return
       }
 
-      // Fully set up — go to browse
+      // Fully set up: go to browse
       navigate('/browse')
     }
 

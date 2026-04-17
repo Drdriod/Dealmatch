@@ -53,7 +53,7 @@ export default function ProfilePage() {
     toast.success('Profile updated!')
   }
 
-  // ✅ FIX: Robust sign-out — calls supabase directly, then hard-redirect
+  // ✅ FIX: Robust sign-out: calls supabase directly, then hard-redirect
   const handleSignOut = async () => {
     setSigningOut(true)
     try {
@@ -63,7 +63,7 @@ export default function ProfilePage() {
       window.location.href = '/'
     } catch (err) {
       console.error('Sign-out error:', err)
-      // Force redirect anyway — worst case the session cookie expires
+      // Force redirect anyway: worst case the session cookie expires
       window.location.href = '/'
     }
   }
@@ -213,7 +213,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* ✅ FIX: Sign out button — prominent, with loading state */}
+        {/* ✅ FIX: Sign out button: prominent, with loading state */}
         <button onClick={handleSignOut} disabled={signingOut}
           className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold border-2 transition-all"
           style={{ borderColor:'rgba(201,106,58,0.4)', color:'#C96A3A', backgroundColor:'rgba(201,106,58,0.05)' }}>

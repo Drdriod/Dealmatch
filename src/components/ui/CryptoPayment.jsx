@@ -126,7 +126,7 @@ export default function CryptoPayment({
 
     // Notify admin via WhatsApp
     const msg = encodeURIComponent(
-      `💎 *Crypto Payment — DealMatch*\n\n` +
+      `💎 *Crypto Payment: DealMatch*\n\n` +
       `Reference: ${reference}\n` +
       `Service: ${description}\n` +
       `Amount: ${total} ${wallet.coin}\n` +
@@ -231,7 +231,7 @@ export default function CryptoPayment({
                 style={{ backgroundColor: 'rgba(212,168,83,0.08)', border: '1px solid rgba(212,168,83,0.2)' }}>
                 <AlertCircle size={13} style={{ color: '#8A6A20', flexShrink: 0, marginTop: 1 }} />
                 <p className="text-xs" style={{ color: '#8A6A20' }}>
-                  Network fees are deducted from your wallet by the blockchain — not by DealMatch.
+                  Network fees are deducted from your wallet by the blockchain: not by DealMatch.
                   <strong> TRC20 has near-zero fees</strong> and is recommended.
                 </p>
               </div>

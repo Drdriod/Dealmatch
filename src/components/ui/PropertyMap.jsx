@@ -221,7 +221,7 @@ export function PropertyMap({ property, height = '360px' }) {
   )
 }
 
-// ─── Map Explorer — all listings ─────────────────────────
+// ─── Map Explorer: all listings ─────────────────────────
 export function MapExplorer({ properties = [], onSelectProperty }) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
   const navigate = useNavigate()
@@ -234,7 +234,7 @@ export function MapExplorer({ properties = [], onSelectProperty }) {
   const [selected, setSelected] = useState(null)
   const center = { lat: 9.0820, lng: 8.6753 } // Nigeria center
 
-  if (!apiKey) return <MapPlaceholder message="Map Explorer unavailable — add Google Maps API key" />
+  if (!apiKey) return <MapPlaceholder message="Map Explorer unavailable: add Google Maps API key" />
   if (loadError) return <MapPlaceholder message="Map failed to load" />
   if (!isLoaded) return (
     <div className="flex items-center justify-center bg-cream rounded-3xl h-[400px]">

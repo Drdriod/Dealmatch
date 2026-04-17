@@ -76,7 +76,7 @@ export default function OnboardingPage() {
   const goalsForRole = GOALS_BY_ROLE[data.role] || []
 
   const steps = [
-    // Step 1 — Role
+    // Step 1: Role
     {
       title: "What's your role?",
       valid: () => !!data.role,
@@ -102,7 +102,7 @@ export default function OnboardingPage() {
         </div>
       ),
     },
-    // Step 2 — Goal (aligned to role)
+    // Step 2: Goal (aligned to role)
     {
       title: 'Your goal',
       valid: () => !!data.property_goal,
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
         </div>
       ),
     },
-    // Step 3 — Preferences (Unique per role)
+    // Step 3: Preferences (Unique per role)
     {
       title: 'Preferences',
       valid: () => {
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
         </div>
       ),
     },
-    // Step 4 — Personal details (FIXED: saves correctly before proceeding)
+    // Step 4: Personal details (FIXED: saves correctly before proceeding)
     {
       title: 'Your details',
       valid: () => !!data.full_name,

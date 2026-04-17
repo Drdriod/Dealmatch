@@ -3,7 +3,7 @@ import { Shield, FileText, CheckCircle } from 'lucide-react'
 
 const STEPS = [
   { icon:'🔍', title:'Find Your Property', desc:'Browse verified rentals and book an inspection through DealMatch.' },
-  { icon:'📋', title:'Sign Agreement', desc:'Complete your tenancy agreement digitally through DealMatch — protected and recorded.' },
+  { icon:'📋', title:'Sign Agreement', desc:'Complete your tenancy agreement digitally through DealMatch: protected and recorded.' },
   { icon:'🔒', title:'Pay via Escrow', desc:'Deposit your rent into DealMatch escrow. Funds released to landlord after move-in confirmation.' },
   { icon:'🏠', title:'Move In', desc:'Confirm move-in and DealMatch releases funds to your landlord. Deal done.' },
 ]
@@ -46,7 +46,7 @@ export default function TenancyPage() {
 
         {[
           { icon:'🔒', title:'Deposit Protection', desc:'Your deposit is held by DealMatch until you confirm the property is as described.' },
-          { icon:'📋', title:'Legal Agreement', desc:'Every tenancy is backed by a written agreement — disputes have a paper trail.' },
+          { icon:'📋', title:'Legal Agreement', desc:'Every tenancy is backed by a written agreement: disputes have a paper trail.' },
           { icon:'✅', title:'Verified Landlords', desc:'Only verified landlords can receive escrow payments through DealMatch.' },
         ].map(b => (
           <div key={b.title} className="rounded-2xl p-4 border flex gap-3 mb-3"

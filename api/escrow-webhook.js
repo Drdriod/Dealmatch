@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 const WHATSAPP = '2347057392060'
 
 const HOW_IT_WORKS = [
-  { icon:'💰', title:'Tenant deposits funds', desc:'Tenant pays rent or deposit to DealMatch — not directly to landlord.' },
+  { icon:'💰', title:'Tenant deposits funds', desc:'Tenant pays rent or deposit to DealMatch: not directly to landlord.' },
   { icon:'🔍', title:'DealMatch verifies', desc:'We confirm property details, agreement terms, and both parties have signed.' },
   { icon:'🏠', title:'Tenant moves in', desc:'Once tenant confirms successful move-in, funds are released to landlord.' },
   { icon:'✅', title:'Deal complete', desc:'DealMatch deducts commission and sends balance to landlord within 24 hours.' },
@@ -43,7 +43,7 @@ function EscrowRequestModal({ onClose }) {
       toast.error('Please fill all required fields')
       return
     }
-    // Pay through Paystack — all escrow payments go through Paystack
+    // Pay through Paystack: all escrow payments go through Paystack
     const tenantEmail = form.tenant_email || user?.email || ''
     if (!tenantEmail) {
       toast.error('Please provide your email address for payment')
@@ -71,7 +71,7 @@ function EscrowRequestModal({ onClose }) {
       onSuccess: (response) => {
         // Notify DealMatch on WhatsApp after payment
         const msg = encodeURIComponent(
-          '✅ *Escrow Payment Received — DealMatch*\n\n' +
+          '✅ *Escrow Payment Received: DealMatch*\n\n' +
           'Property: ' + form.property_title + '\n' +
           'Tenant: ' + form.tenant_name + ' | ' + form.tenant_phone + '\n' +
           'Landlord: ' + form.landlord_name + ' | ' + form.landlord_phone + '\n' +

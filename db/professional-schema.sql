@@ -45,7 +45,7 @@ export default function SearchPalette({ isOpen, onClose }) {
     const timer = setTimeout(async () => {
       setLoading(true)
       const { data } = await getProperties({ limit: 6 })
-      // Filter by query (client-side for now — replace with Supabase full-text search)
+      // Filter by query (client-side for now: replace with Supabase full-text search)
       const q = query.toLowerCase()
       const filtered = (data || []).filter(p =>
         p.title?.toLowerCase().includes(q) ||

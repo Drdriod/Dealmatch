@@ -1,6 +1,6 @@
 // DealMatch Crypto Payment System
 // Supports USDT + USDC across TRC20, BEP20, ERC20, Polygon
-// Fixed USD charges — no Naira rate fluctuation
+// Fixed USD charges: no Naira rate fluctuation
 
 export const CRYPTO_WALLETS = {
   USDT_TRC20: {
@@ -101,7 +101,7 @@ export const CRYPTO_WALLETS = {
   },
 }
 
-// Fixed USD charges per service — no Naira rate confusion
+// Fixed USD charges per service: no Naira rate confusion
 export const CRYPTO_CHARGES = {
   professional_surveyor:   15,
   professional_inspector:  21,

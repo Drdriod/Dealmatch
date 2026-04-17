@@ -410,7 +410,7 @@ export default function ProfessionalsPage() {
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="font-display text-2xl font-black" style={{ color:'#1A1210' }}>Professionals 💼</h1>
-            <p className="text-xs mt-0.5" style={{ color:'#8A7E78' }}>Verified experts — contact in-app</p>
+            <p className="text-xs mt-0.5" style={{ color:'#8A7E78' }}>Verified experts: contact in-app</p>
           </div>
           {/* View mode toggle */}
           <div className="flex rounded-xl overflow-hidden border" style={{ borderColor:'#E8DDD2' }}>

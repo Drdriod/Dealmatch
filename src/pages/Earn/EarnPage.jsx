@@ -31,7 +31,7 @@ function AMGSection() {
   const handleJoin = () => {
     if (!form.name || !form.phone) { toast.error('Name and phone are required'); return }
     const msg = encodeURIComponent(
-      `💼 *AMG Partnership Enquiry — DealMatch*\n\n` +
+      `💼 *AMG Partnership Enquiry: DealMatch*\n\n` +
       `Name: ${form.name}\nPhone: ${form.phone}\n` +
       (form.email ? `Email: ${form.email}\n` : '') +
       (form.city  ? `City: ${form.city}\n`   : '') +
@@ -58,7 +58,7 @@ function AMGSection() {
             </div>
           </div>
           <p className="text-sm leading-relaxed mb-5" style={{ color:'rgba(255,255,255,0.6)' }}>
-            Partner with DealMatch as an AMG network affiliate. Refer property deals, professionals, and users — earn passive commissions on every transaction within your network. Build a real estate income stream without owning property.
+            Partner with DealMatch as an AMG network affiliate. Refer property deals, professionals, and users: earn passive commissions on every transaction within your network. Build a real estate income stream without owning property.
           </p>
 
           {/* AMG Benefits */}
@@ -218,7 +218,7 @@ export default function EarnPage() {
           </div>
         </div>
 
-        {/* AMG Partnership — from README */}
+        {/* AMG Partnership: from README */}
         <AMGSection />
 
         {/* Referral shortcut */}
@@ -312,7 +312,7 @@ export default function EarnPage() {
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider mb-2 block" style={{ color:'rgba(26,18,16,0.5)' }}>Plan</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {[['monthly',`Monthly — ₦${pro.monthly.toLocaleString()}`],['annual',`Annual — ₦${pro.annual.toLocaleString()}`]].map(([v,l]) => (
+                    {[['monthly',`Monthly: ₦${pro.monthly.toLocaleString()}`],['annual',`Annual: ₦${pro.annual.toLocaleString()}`]].map(([v,l]) => (
                       <button key={v} type="button" onClick={() => setForm(f => ({ ...f, plan:v }))}
                         className="py-3 rounded-xl text-sm font-semibold border-2 transition-all"
                         style={{ borderColor: form.plan === v ? '#C96A3A' : '#E8DDD2', color: form.plan === v ? '#C96A3A' : '#8A7E78', backgroundColor: form.plan === v ? 'rgba(201,106,58,0.05)' : '#FFFFFF' }}>

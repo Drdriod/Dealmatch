@@ -138,7 +138,7 @@ function CategoryCard({ cat, onUpdate }) {
     // Notify DealMatch if fully booked
     if (newVal === 0) {
       const msg = encodeURIComponent(
-        '🔴 *Room Fully Booked — DealMatch*\n\n' +
+        '🔴 *Room Fully Booked: DealMatch*\n\n' +
         'Property: ' + (cat.property_title || 'Your Property') + '\n' +
         'Category: ' + cat.name + '\n' +
         'Status: ALL ' + total + ' rooms are now booked\n\n' +

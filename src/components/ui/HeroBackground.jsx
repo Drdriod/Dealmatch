@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 /**
  * Animated canvas background for the HomePage hero.
- * Draws drifting particles and soft connection lines — 
+ * Draws drifting particles and soft connection lines: 
  * symbolises matching/connection without being heavy on perf.
  */
 export default function HeroBackground({ className = '' }) {

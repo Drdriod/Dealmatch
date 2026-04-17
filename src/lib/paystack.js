@@ -1,4 +1,4 @@
-// Paystack — Nigerian payment gateway
+// Paystack: Nigerian payment gateway
 // Handles professional listing subscription fees
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY

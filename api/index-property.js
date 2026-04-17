@@ -1,4 +1,4 @@
-// api/index-property.js — Vercel serverless function
+// api/index-property.js: Vercel serverless function
 // POST /api/index-property → indexes new listing in Pinecone
 
 export default async function handler(req, res) {

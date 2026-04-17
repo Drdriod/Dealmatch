@@ -18,11 +18,11 @@ const LENDERS = [
 ]
 
 const FAQS = [
-  { q:'What is a mortgage?', a:'A mortgage is a loan to buy property. You pay back over 10–30 years with interest. The property is collateral — if you stop paying, the lender can reclaim it. DealMatch connects you with licensed Nigerian lenders who offer competitive rates.' },
+  { q:'What is a mortgage?', a:'A mortgage is a loan to buy property. You pay back over 10–30 years with interest. The property is collateral: if you stop paying, the lender can reclaim it. DealMatch connects you with licensed Nigerian lenders who offer competitive rates.' },
   { q:'How much can I borrow?', a:'Typically up to 60–80% of the property value (Loan-to-Value ratio). So for a ₦20M property, you can borrow ₦12M–₦16M. Your income, employer, and credit history affect the exact amount.' },
   { q:'What documents do I need?', a:'Utility bill/proof of address, 6 months bank statements, employment letter + 3 months payslips (or 2 years accounts if self-employed), valid ID, and a Certificate of Occupancy on the property.' },
   { q:'What is the NHF scheme?', a:'The National Housing Fund is a government programme with rates as low as 6%. Any Nigerian worker contributing to NHF for at least 6 months can qualify for loans up to ₦15M. DealMatch can connect you directly with FMBN-accredited lenders.' },
-  { q:'How long does approval take?', a:'Typically 2–8 weeks from application to disbursement. DealMatch lenders on our platform pre-qualify you first — this cuts the process to as little as 5 business days.' },
+  { q:'How long does approval take?', a:'Typically 2–8 weeks from application to disbursement. DealMatch lenders on our platform pre-qualify you first: this cuts the process to as little as 5 business days.' },
 ]
 
 // ─── Calculator ──────────────────────────────────────────────
@@ -144,7 +144,7 @@ function ApplicationForm({ lender, onClose }) {
 
       // Notify via WhatsApp
       const msg = encodeURIComponent(
-        `🏠 *Mortgage Application — DealMatch*\n\n` +
+        `🏠 *Mortgage Application: DealMatch*\n\n` +
         `Applicant: ${form.full_name}\nPhone: ${form.phone}\n` +
         (form.email ? `Email: ${form.email}\n` : '') +
         `Lender Preferred: ${lender?.name || 'Any'}\n` +
@@ -285,7 +285,7 @@ export default function MortgagePage() {
             <span style={{ color:'#C96A3A' }}>DealMatch connects you to the best lenders.</span>
           </h1>
           <p className="text-lg leading-relaxed mb-10 max-w-2xl mx-auto" style={{ color:'rgba(255,255,255,0.55)' }}>
-            Stop paying rent forever. DealMatch partners with Nigeria's top mortgage lenders — NHF, commercial banks, and housing funds — to give you a clear path to home ownership. Apply once, we connect you to the right lender.
+            Stop paying rent forever. DealMatch partners with Nigeria's top mortgage lenders: NHF, commercial banks, and housing funds: to give you a clear path to home ownership. Apply once, we connect you to the right lender.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <button onClick={() => setApplyLender({ id:'any', name:'Best Available Lender' })}
@@ -321,10 +321,10 @@ export default function MortgagePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon:'🏦', title:'Pre-qualified in 24hrs', desc:'Submit once — we match you with the lender most likely to approve your profile. No wasted applications.' },
+              { icon:'🏦', title:'Pre-qualified in 24hrs', desc:'Submit once: we match you with the lender most likely to approve your profile. No wasted applications.' },
               { icon:'📉', title:'Access government rates', desc:'We connect you directly to NHF and FMBN accredited channels where rates start at just 6% per annum.' },
               { icon:'🏡', title:'Property + mortgage in one', desc:'Browse verified properties on DealMatch and apply for a mortgage on the same property in one flow.' },
-              { icon:'🤝', title:'Expert support',           desc:'Our mortgage desk agents guide you from application to disbursement — no confusing paperwork alone.' },
+              { icon:'🤝', title:'Expert support',           desc:'Our mortgage desk agents guide you from application to disbursement: no confusing paperwork alone.' },
               { icon:'🔒', title:'Verified lenders only',    desc:'Every lender on DealMatch is licensed by the Central Bank of Nigeria. No unlicensed operators.' },
               { icon:'⚡', title:'Fast-track approval',      desc:'Organised applicants get approvals in as little as 5 business days with our fast-track document guide.' },
             ].map((f, i) => (
@@ -355,7 +355,7 @@ export default function MortgagePage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="font-display font-black text-3xl mb-2" style={{ color:'#1A1210' }}>Our Partner Lenders</h2>
-            <p className="text-sm" style={{ color:'#8A7E78' }}>Licensed Nigerian mortgage providers — apply directly through DealMatch</p>
+            <p className="text-sm" style={{ color:'#8A7E78' }}>Licensed Nigerian mortgage providers: apply directly through DealMatch</p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {LENDERS.map(l => (
@@ -403,7 +403,7 @@ export default function MortgagePage() {
           <div className="text-5xl mb-4">🏛️</div>
           <h2 className="font-display font-black text-3xl mb-4 text-white">NHF Loan at just 6% per year</h2>
           <p className="text-base leading-relaxed mb-8 max-w-2xl mx-auto" style={{ color:'rgba(255,255,255,0.55)' }}>
-            The National Housing Fund is Nigeria's most affordable mortgage scheme. Any worker contributing to NHF for at least 6 months qualifies for a loan up to ₦15M at <strong style={{ color:'#C96A3A' }}>6% per annum</strong> — far below commercial rates. DealMatch connects you directly with FMBN-accredited lenders who process NHF loans.
+            The National Housing Fund is Nigeria's most affordable mortgage scheme. Any worker contributing to NHF for at least 6 months qualifies for a loan up to ₦15M at <strong style={{ color:'#C96A3A' }}>6% per annum</strong> : far below commercial rates. DealMatch connects you directly with FMBN-accredited lenders who process NHF loans.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
@@ -435,7 +435,7 @@ export default function MortgagePage() {
             {[
               { n:'01', icon:'📝', title:'Submit your details', desc:'Fill a short form with your income, employment, and target property value.' },
               { n:'02', icon:'🤝', title:'We match you',        desc:'DealMatch team reviews your profile and connects you with the best-fit lender within 24 hours.' },
-              { n:'03', icon:'📋', title:'Document review',     desc:'The lender reviews your documents — bank statements, ID, employment proof.' },
+              { n:'03', icon:'📋', title:'Document review',     desc:'The lender reviews your documents: bank statements, ID, employment proof.' },
               { n:'04', icon:'🏠', title:'Get your home',       desc:'Loan approved and disbursed. Move into your new home with a clear repayment plan.' },
             ].map((s, i) => (
               <div key={i} className="text-center">

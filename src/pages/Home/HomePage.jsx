@@ -17,16 +17,16 @@ const STATS = [
 ]
 
 const HOW_IT_WORKS = [
-  { icon:'🔍', step:'01', title:'Tell Us What You Want',  desc:'Set your preferences — location, budget, property type. Takes 2 minutes.' },
+  { icon:'🔍', step:'01', title:'Tell Us What You Want',  desc:'Set your preferences: location, budget, property type. Takes 2 minutes.' },
   { icon:'🤖', step:'02', title:'AI Matches You',         desc:'Our AI scans thousands of listings and surfaces only the ones that truly fit.' },
   { icon:'🤝', step:'03', title:'Connect & Close',        desc:'Swipe through matches, connect with sellers, close deals securely via escrow.' },
 ]
 
 const FEATURES = [
-  { icon:'🤖', title:'AI-Powered Matching',   desc:'Pinecone vector search matches you with properties based on deep preference analysis — not just filters.' },
-  { icon:'🔒', title:'Escrow Protection',      desc:'Pay rent and deposits safely. Funds held until you confirm move-in — landlords cannot touch it early.' },
+  { icon:'🤖', title:'AI-Powered Matching',   desc:'Pinecone vector search matches you with properties based on deep preference analysis: not just filters.' },
+  { icon:'🔒', title:'Escrow Protection',      desc:'Pay rent and deposits safely. Funds held until you confirm move-in: landlords cannot touch it early.' },
   { icon:'✅', title:'Verified Listings',      desc:'Every listing reviewed by our team. Fake listings and scams blocked before they reach you.' },
-  { icon:'💼', title:'Pro Network',            desc:'Verified surveyors, inspectors, lawyers, and lenders — swipe through them like properties.' },
+  { icon:'💼', title:'Pro Network',            desc:'Verified surveyors, inspectors, lawyers, and lenders: swipe through them like properties.' },
   { icon:'🏨', title:'Hotel Bookings',         desc:'Book hotels and short-lets with full date/guest/room management and price calculator.' },
   { icon:'🤝', title:'AMG Partnership',        desc:'Build passive income by referring deals, professionals, and users through our network programme.' },
 ]
@@ -114,7 +114,7 @@ export default function HomePage() {
               <PropertyCarousel
                 properties={featuredProps}
                 title="Featured Deals 🏡"
-                subtitle="Fresh listings matched by AI — updated daily"
+                subtitle="Fresh listings matched by AI: updated daily"
               />
             </FadeUp>
           </div>

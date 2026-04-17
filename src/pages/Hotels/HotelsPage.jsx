@@ -67,7 +67,7 @@ function BookingModal({ hotel, onClose }) {
 
       // Notify hotel owner via WhatsApp
       const msg = encodeURIComponent(
-        `🏨 *New Booking — DealMatch*\n\n` +
+        `🏨 *New Booking: DealMatch*\n\n` +
         `Hotel: ${hotel.title}\n` +
         `Guest: ${form.guest_name} | ${form.guest_phone}\n` +
         `Check-in: ${form.checkin}\nCheck-out: ${form.checkout}\n` +
@@ -221,7 +221,7 @@ function BookingModal({ hotel, onClose }) {
             <button onClick={handleBook} disabled={submitting || !form.checkin || !form.checkout || !form.guest_name || !form.guest_phone}
               className="btn-primary w-full py-4"
               style={{ opacity: (!form.checkin || !form.checkout || !form.guest_name || !form.guest_phone) ? 0.5 : 1 }}>
-              {submitting ? 'Confirming...' : `Confirm Booking${totalDue ? ` — ₦${totalDue.toLocaleString()}` : ''} →`}
+              {submitting ? 'Confirming...' : `Confirm Booking${totalDue ? ` : ₦${totalDue.toLocaleString()}` : ''} →`}
             </button>
           </div>
         )}
@@ -337,7 +337,7 @@ export default function HotelsPage() {
 
         <div className="mb-6">
           <h1 className="font-display text-2xl font-black" style={{ color:'#1A1210' }}>Hotels & Short-lets 🏨</h1>
-          <p className="text-xs mt-0.5" style={{ color:'#8A7E78' }}>Book directly — instant confirmation via WhatsApp</p>
+          <p className="text-xs mt-0.5" style={{ color:'#8A7E78' }}>Book directly: instant confirmation via WhatsApp</p>
         </div>
 
         {/* Search */}

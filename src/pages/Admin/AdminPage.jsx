@@ -98,8 +98,8 @@ export default function AdminPage() {
     const phone = listing?.profiles?.phone?.replace(/\D/g,'')
     if (phone) {
       const msg = status === 'active'
-        ? encodeURIComponent(`✅ *DealMatch — Listing Approved!*\n\nHi ${listing.profiles?.full_name||'there'},\n\nYour property *"${listing.title}"* is now live on DealMatch.\n\n🌐 dealmatch-yvdm.vercel.app`)
-        : encodeURIComponent(`❌ *DealMatch — Listing Not Approved*\n\nHi ${listing.profiles?.full_name||'there'},\n\nYour listing *"${listing.title}"* was not approved.\n${note ? `Reason: ${note}\n` : ''}\nContact: +234 705 739 2060`)
+        ? encodeURIComponent(`✅ *DealMatch: Listing Approved!*\n\nHi ${listing.profiles?.full_name||'there'},\n\nYour property *"${listing.title}"* is now live on DealMatch.\n\n🌐 dealmatch-yvdm.vercel.app`)
+        : encodeURIComponent(`❌ *DealMatch: Listing Not Approved*\n\nHi ${listing.profiles?.full_name||'there'},\n\nYour listing *"${listing.title}"* was not approved.\n${note ? `Reason: ${note}\n` : ''}\nContact: +234 705 739 2060`)
       window.open(`https://wa.me/${phone}?text=${msg}`, '_blank')
     }
     loadListings(); loadStats()
@@ -112,7 +112,7 @@ export default function AdminPage() {
     const agent = agents.find(a => a.id === agentId)
     const listing = listings.find(l => l.id === propertyId)
     if (agent?.phone) {
-      const msg = encodeURIComponent(`🏠 *New Property Assignment — DealMatch*\n\nHi ${agent.full_name},\n\nYou have been assigned to verify:\n*"${listing?.title}"*\n${listing?.city}, ${listing?.state}\n${listing?.address||''}\n\nPlease visit the property and complete verification in your agent dashboard.\n\n🌐 dealmatch-yvdm.vercel.app/verify`)
+      const msg = encodeURIComponent(`🏠 *New Property Assignment: DealMatch*\n\nHi ${agent.full_name},\n\nYou have been assigned to verify:\n*"${listing?.title}"*\n${listing?.city}, ${listing?.state}\n${listing?.address||''}\n\nPlease visit the property and complete verification in your agent dashboard.\n\n🌐 dealmatch-yvdm.vercel.app/verify`)
       window.open(`https://wa.me/${agent.phone.replace(/\D/g,'')}?text=${msg}`, '_blank')
     }
     toast.success(`Agent assigned: ${agent?.full_name}`)
@@ -131,7 +131,7 @@ export default function AdminPage() {
   const confirmCrypto = async (tx) => {
     await supabase.from('crypto_payments').update({ status:'confirmed', confirmed_at: new Date().toISOString() }).eq('id', tx.id)
     if (tx.user_phone) {
-      const msg = encodeURIComponent(`✅ *DealMatch — Crypto Confirmed!*\n\nYour ${tx.usdt_amount} USDT payment has been verified.\nService: ${tx.description}\nRef: ${tx.reference}\n\nThank you!`)
+      const msg = encodeURIComponent(`✅ *DealMatch: Crypto Confirmed!*\n\nYour ${tx.usdt_amount} USDT payment has been verified.\nService: ${tx.description}\nRef: ${tx.reference}\n\nThank you!`)
       window.open(`https://wa.me/${tx.user_phone.replace(/\D/g,'')}?text=${msg}`, '_blank')
     }
     toast.success('Crypto confirmed!')
@@ -142,7 +142,7 @@ export default function AdminPage() {
   const activatePro = async (pro) => {
     await supabase.from('professional_applications').update({ status:'active', activated_at: new Date().toISOString() }).eq('id', pro.id)
     if (pro.phone) {
-      const msg = encodeURIComponent(`✅ *DealMatch — Professional Profile Active!*\n\nHi ${pro.full_name},\n\nYour profile as a *${pro.type}* is now live on DealMatch.\n\n🌐 dealmatch-yvdm.vercel.app/professionals`)
+      const msg = encodeURIComponent(`✅ *DealMatch: Professional Profile Active!*\n\nHi ${pro.full_name},\n\nYour profile as a *${pro.type}* is now live on DealMatch.\n\n🌐 dealmatch-yvdm.vercel.app/professionals`)
       window.open(`https://wa.me/${pro.phone.replace(/\D/g,'')}?text=${msg}`, '_blank')
     }
     toast.success(`${pro.full_name} activated!`)
@@ -401,7 +401,7 @@ export default function AdminPage() {
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold" style={{ backgroundColor:'rgba(122,158,126,0.12)', color:'#5C8060' }}>
                       ✅ Mark Resolved
                     </button>
-                    <button onClick={() => resolveDispute(d.id, 'Dismissed — no evidence of wrongdoing')}
+                    <button onClick={() => resolveDispute(d.id, 'Dismissed: no evidence of wrongdoing')}
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold border" style={{ borderColor:'#E8DDD2', color:'#8A7E78' }}>
                       Dismiss
                     </button>

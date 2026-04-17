@@ -1,4 +1,4 @@
-// Paystack Webhook Handler — verifies payment events server-side
+// Paystack Webhook Handler: verifies payment events server-side
 // Deployed as Vercel serverless function at /api/paystack-webhook
 
 import crypto from 'crypto'
@@ -18,7 +18,7 @@ function verifySignature(secret, body, signature) {
   }
 }
 
-// ✅ SECURITY: idempotency guard — track processed references in memory
+// ✅ SECURITY: idempotency guard: track processed references in memory
 // In production replace with Redis or a DB table
 const processedRefs = new Set()
 
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
         const { reference, amount, customer, metadata } = event.data
         if (!reference) break
 
-        // ✅ SECURITY: idempotency — skip already-processed references
+        // ✅ SECURITY: idempotency: skip already-processed references
         if (processedRefs.has(reference)) {
           console.log('Duplicate webhook, skipping:', reference)
           break
@@ -132,7 +132,7 @@ export default async function handler(req, res) {
         break
 
       default:
-        // Don't log unknown events in detail — potential info leak
+        // Don't log unknown events in detail: potential info leak
         break
     }
 

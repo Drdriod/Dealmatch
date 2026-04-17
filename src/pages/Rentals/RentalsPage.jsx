@@ -48,7 +48,7 @@ function InterestModal({ rental, onClose }) {
 
     // Notify landlord/DealMatch via WhatsApp
     const msg = encodeURIComponent(
-      `🔑 *Rental Enquiry — DealMatch*\n\n` +
+      `🔑 *Rental Enquiry: DealMatch*\n\n` +
       `Property: ${rental.title}\n` +
       `${rental.city}, ${rental.state}\n` +
       `Price: ₦${Number(rental.price).toLocaleString()}/yr\n\n` +

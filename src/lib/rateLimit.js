@@ -1,4 +1,4 @@
-// Client-side rate limiting — prevents spam submissions
+// Client-side rate limiting: prevents spam submissions
 
 const attempts = {}
 

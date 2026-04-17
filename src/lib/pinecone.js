@@ -1,4 +1,4 @@
-// Pinecone — vector similarity matching
+// Pinecone: vector similarity matching
 // Used for semantic property matching based on buyer preferences
 
 // NOTE: Pinecone calls happen server-side (Vercel API routes) to protect your API key.

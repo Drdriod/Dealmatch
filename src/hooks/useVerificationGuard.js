@@ -16,7 +16,7 @@ export function useVerificationGuard() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
 
-  // Async check — fetches fresh from Supabase every time
+  // Async check: fetches fresh from Supabase every time
   const checkAsync = async (action) => {
     const req = REQUIREMENTS[action]
     if (!req) return true

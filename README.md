@@ -23,26 +23,26 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 - AI matches them to listings using Pinecone vector search
 - Swipe to like, pass, or super-like properties
 - Properties show photos, video tours, features, and documents
-- Sellers list properties in 5 steps — type → location → details → photos/video → description
+- Sellers list properties in 5 steps: type → location → details → photos/video → description
 - Commission agreement built into every listing (1.5% on sale)
 
 ### 🔑 Rentals & Short-lets
 - Grid view and swipe view
 - Filter by Rental or Short-let, by state, by property type
-- Interest form — tenant details sent directly to landlord via WhatsApp
+- Interest form: tenant details sent directly to landlord via WhatsApp
 - Landlords list in 6 steps with photo and video upload
 - Commission: 3% annual rental, 8% short-let per booking
 
 ### 🏨 Hotels & Lodging
 - Browse hotels with filter by type (Luxury, Budget, Resort, Short-let, Boutique) and state
-- Full booking modal — dates, guests, rooms, real-time price calculator (8% commission included)
+- Full booking modal: dates, guests, rooms, real-time price calculator (8% commission included)
 - Booking confirmation saved to database and notified via WhatsApp
 - Commission: 8% per confirmed booking
 
 ### 💼 For Professionals (Swipe & Request In-App)
 - Swipe left/right through verified professionals (no WhatsApp redirect)
 - Full profile cards: avatar, rating, verified badge, years of experience, coverage areas, bio
-- In-app contact request form — saved to `professional_requests` table, professional notified
+- In-app contact request form: saved to `professional_requests` table, professional notified
 - Star ratings and review counts displayed per professional
 - List view and swipe view modes
 
@@ -52,7 +52,7 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 - Join form sends interest directly to founder via WhatsApp
 
 ### 💰 Earn with DealMatch
-- Referral link in dashboard — share and earn
+- Referral link in dashboard: share and earn
 - AMG partnership sign-up from EarnPage
 - Professional subscription application with Paystack payment
 
@@ -72,7 +72,7 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 | Annual Rental | 3% of first year total rent |
 | Short-let Booking | 8% per confirmed booking |
 | Hotel Booking | 8% per confirmed booking |
-| Professional Subscribers | Flat monthly fee — no commission |
+| Professional Subscribers | Flat monthly fee: no commission |
 | Escrow Facilitation | 3% |
 
 ---
@@ -99,16 +99,16 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 
 ## Security
 
-- **Input sanitization** — XSS prevention on all user inputs (`src/lib/security.js`)
-- **Server-side rate limiting** — Upstash Redis, per-IP, sliding window on all API routes
-- **Client-side rate limiting** — prevents spam form submissions
-- **File validation** — type + size checked before any upload
-- **CSP headers** — Content Security Policy in `vercel.json`
-- **HSTS** — Strict-Transport-Security with preload
-- **Parameterized queries** — Supabase handles all DB interactions; no raw SQL from client
-- **CORS** — API routes locked to app domain only
-- **Sentry ErrorBoundary** — all crashes caught, notified, user shown clean error screen
-- **Auth tokens** — never exposed in client logs or error reports (Sentry PII scrubbing)
+- **Input sanitization** : XSS prevention on all user inputs (`src/lib/security.js`)
+- **Server-side rate limiting** : Upstash Redis, per-IP, sliding window on all API routes
+- **Client-side rate limiting** : prevents spam form submissions
+- **File validation** : type + size checked before any upload
+- **CSP headers** : Content Security Policy in `vercel.json`
+- **HSTS** : Strict-Transport-Security with preload
+- **Parameterized queries** : Supabase handles all DB interactions; no raw SQL from client
+- **CORS** : API routes locked to app domain only
+- **Sentry ErrorBoundary** : all crashes caught, notified, user shown clean error screen
+- **Auth tokens** : never exposed in client logs or error reports (Sentry PII scrubbing)
 
 ---
 
@@ -183,7 +183,7 @@ base: process.env.GITHUB_ACTIONS ? '/Dealmatch/' : '/'
 ## Contact
 
 **Divine Bassey**  
-Founder & CEO — DealMatch  
+Founder & CEO: DealMatch  
 📍 Uyo, Akwa Ibom, Nigeria  
 📱 WhatsApp: +234 705 739 2060  
 🐦 X: [@Wizdivine](https://x.com/Wizdivine)

@@ -215,7 +215,7 @@ export default function LiveVerification({ onSuccess, onClose }) {
                   backgroundColor: cameraReady && !checking ? '#C96A3A' : 'rgba(26,18,16,0.1)',
                   color: cameraReady && !checking ? '#FFFFFF' : '#8A7E78',
                 }}>
-                {checking ? 'Checking...' : `✓ Done — I completed this`}
+                {checking ? 'Checking...' : `✓ Done: I completed this`}
               </button>
               <p className="text-xs" style={{ color: 'rgba(26,18,16,0.35)' }}>
                 Tap when you've completed the action above

@@ -184,7 +184,7 @@ export default function VerifyIdentityPage() {
             <button onClick={goToDashboard}
               className="w-full py-3 text-xs text-center mt-3"
               style={{ color:'rgba(26,18,16,0.35)' }}>
-              Skip for now — some features will be limited
+              Skip for now: some features will be limited
             </button>
           </motion.div>
         )}
@@ -226,7 +226,7 @@ export default function VerifyIdentityPage() {
                   {idPreview ? (
                     <div className="relative">
                       <img src={idPreview} alt="ID" className="max-h-40 mx-auto rounded-xl object-contain" />
-                      <div className="mt-2 text-xs font-semibold" style={{ color:'#7A9E7E' }}>✅ ID uploaded — tap to replace</div>
+                      <div className="mt-2 text-xs font-semibold" style={{ color:'#7A9E7E' }}>✅ ID uploaded: tap to replace</div>
                     </div>
                   ) : (
                     <>

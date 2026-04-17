@@ -1,4 +1,4 @@
-// api/match.js — Vercel serverless: POST /api/match
+// api/match.js: Vercel serverless: POST /api/match
 import { redisRateLimit, cacheGet, cacheSet } from '../src/lib/redis.js'
 
 export default async function handler(req, res) {
@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  // ✅ SECURITY: Redis rate limit — 30 matches/min per IP
+  // ✅ SECURITY: Redis rate limit: 30 matches/min per IP
   const rl = await redisRateLimit(req, 'match', 30, 60)
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' })
 

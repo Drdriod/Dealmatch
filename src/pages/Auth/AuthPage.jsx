@@ -31,7 +31,7 @@ export default function AuthPage() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
-  // ─── Sign Up — no role here anymore ──────────────────
+  // ─── Sign Up: no role here anymore ──────────────────
   const handleSignUp = async (e) => {
     e.preventDefault()
     if (!form.fullName || !form.email || !form.password) return toast.error('Please fill all fields')
@@ -207,7 +207,7 @@ export default function AuthPage() {
           <div className="flex flex-col gap-4">
             {[
               { icon:'⭕', text:'Smart AI matching based on your lifestyle and goals' },
-              { icon:'✅', text:'Verified professionals — surveyors, inspectors, lenders' },
+              { icon:'✅', text:'Verified professionals: surveyors, inspectors, lenders' },
               { icon:'🔒', text:'Secure title verification built into every deal' },
             ].map(({ icon, text }) => (
               <div key={text} className="flex items-center gap-3">

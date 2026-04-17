@@ -1,5 +1,5 @@
 /**
- * Agent Verification Page — DealMatch internal
+ * Agent Verification Page: DealMatch internal
  * DealMatch trusted agents visit property locations and verify listings
  * Only accessible to verified agent accounts (checked against profiles table)
  */
@@ -65,14 +65,14 @@ export default function VerificationPage() {
     if (error) { toast.error('Update failed: ' + error.message); return }
 
     const statusLabel = newStatus === 'active' ? 'Verified ✅' : newStatus === 'rejected' ? 'Rejected ❌' : 'Updated'
-    toast.success(`${property.title} — ${statusLabel}`)
+    toast.success(`${property.title} : ${statusLabel}`)
 
     // Notify landlord via WhatsApp
     const phone = property.profiles?.phone?.replace(/\D/g,'')
     if (phone) {
       const msg = newStatus === 'active'
-        ? encodeURIComponent(`✅ *DealMatch — Property Verified!*\n\nHi ${property.profiles?.full_name || 'there'},\n\nYour property listing *"${property.title}"* has been verified by our agent and is now LIVE on DealMatch. Buyers can now see and match with your property.\n\n🌐 dealmatch-yvdm.vercel.app`)
-        : encodeURIComponent(`❌ *DealMatch — Property Not Approved*\n\nHi ${property.profiles?.full_name || 'there'},\n\nYour listing *"${property.title}"* could not be verified at this time.\n\nReason: ${note || 'Please contact DealMatch for details.'}\n\nWhatsApp: +234 705 739 2060`)
+        ? encodeURIComponent(`✅ *DealMatch: Property Verified!*\n\nHi ${property.profiles?.full_name || 'there'},\n\nYour property listing *"${property.title}"* has been verified by our agent and is now LIVE on DealMatch. Buyers can now see and match with your property.\n\n🌐 dealmatch-yvdm.vercel.app`)
+        : encodeURIComponent(`❌ *DealMatch: Property Not Approved*\n\nHi ${property.profiles?.full_name || 'there'},\n\nYour listing *"${property.title}"* could not be verified at this time.\n\nReason: ${note || 'Please contact DealMatch for details.'}\n\nWhatsApp: +234 705 739 2060`)
       window.open(`https://wa.me/${phone}?text=${msg}`, '_blank')
     }
 

@@ -76,7 +76,7 @@ export default function DashboardPage() {
   }
 
   const handleShare = async () => {
-    const text = `🏡 Join me on DealMatch — Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up with my link:\n${referralLink}\n\nUse my code: *${referralCode}*`
+    const text = `🏡 Join me on DealMatch: Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up with my link:\n${referralLink}\n\nUse my code: *${referralCode}*`
     if (navigator.share) {
       await navigator.share({ title:'Join DealMatch', text })
     } else {
@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
   const handleWhatsAppShare = () => {
     const msg = encodeURIComponent(
-      `🏡 Join me on DealMatch — Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up here: ${referralLink}\n\nUse my code: *${referralCode}*`
+      `🏡 Join me on DealMatch: Nigeria's smartest property platform!\n\nFind your perfect property, book hotels, and connect with verified professionals.\n\nSign up here: ${referralLink}\n\nUse my code: *${referralCode}*`
     )
     window.open('https://wa.me/?text=' + msg, '_blank')
   }

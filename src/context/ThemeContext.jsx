@@ -7,7 +7,7 @@ export function ThemeProvider({ children }) {
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false
     // Only use dark mode if user has explicitly chosen it before
-    // Default is always light — ignore system preference
+    // Default is always light: ignore system preference
     return localStorage.getItem('dm-theme') === 'dark'
   })
 

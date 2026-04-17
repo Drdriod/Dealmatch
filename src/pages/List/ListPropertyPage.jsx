@@ -284,7 +284,7 @@ export default function ListPropertyPage() {
               onClick={() => document.getElementById('prop-photo-upload').click()}>
               <div className="text-4xl mb-3">{form.images.length > 0 ? '✅' : '📷'}</div>
               <p className="font-semibold text-sm mb-1" style={{color:'#1A1210'}}>
-                {form.images.length > 0 ? `${form.images.length} photo${form.images.length > 1 ? 's' : ''} added — tap to add more` : 'Tap to upload photos'}
+                {form.images.length > 0 ? `${form.images.length} photo${form.images.length > 1 ? 's' : ''} added: tap to add more` : 'Tap to upload photos'}
               </p>
               <p className="text-xs" style={{color: form.images.length === 0 ? '#C96A3A' : '#8A7E78'}}>
                 {form.images.length === 0
@@ -403,7 +403,7 @@ export default function ListPropertyPage() {
           <div className="p-4 rounded-2xl" style={{backgroundColor:'rgba(212,168,83,0.08)', border:'1px solid rgba(212,168,83,0.2)'}}>
             <p className="text-xs font-semibold mb-1" style={{color:'#8A6A20'}}>💡 Pro tip</p>
             <p className="text-xs leading-relaxed" style={{color:'#8A7E78'}}>
-              Listings with a video tour get 5× more serious enquiries. Just walk through the property on your phone — no editing needed.
+              Listings with a video tour get 5× more serious enquiries. Just walk through the property on your phone: no editing needed.
             </p>
           </div>
         </div>
@@ -422,7 +422,7 @@ export default function ListPropertyPage() {
           </div>
           <div>
             <textarea className="input resize-none" rows={8}
-              placeholder="Describe the property — location, features, access roads, nearby landmarks, title status, and why it's a great buy. Minimum 50 characters."
+              placeholder="Describe the property: location, features, access roads, nearby landmarks, title status, and why it's a great buy. Minimum 50 characters."
               value={form.description} onChange={setE('description')}
               style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
             <p className="text-xs mt-1.5" style={{color: form.description.length >= 50 ? '#7A9E7E' : '#8A7E78'}}>
@@ -478,7 +478,7 @@ export default function ListPropertyPage() {
     setSaving(true)
 
     try {
-      // Step A — Upload all images to Supabase Storage
+      // Step A: Upload all images to Supabase Storage
       setUploadProgress('Uploading photos...')
       const uploadedImages = []
 
@@ -496,16 +496,16 @@ export default function ListPropertyPage() {
             })
           } catch (uploadErr) {
             console.error('Image upload error:', uploadErr)
-            // Don't block listing — skip failed image and warn
+            // Don't block listing: skip failed image and warn
             toast(`Photo ${i + 1} could not be uploaded and was skipped.`, { icon: '⚠️' })
           }
         } else {
-          // Already a URL (YouTube link etc) — keep as is
+          // Already a URL (YouTube link etc) : keep as is
           uploadedImages.push({ url: img.url, is_primary: img.is_primary })
         }
       }
 
-      // Step B — Build and insert the property record
+      // Step B: Build and insert the property record
       setUploadProgress('Publishing your listing...')
 
       const payload = {
@@ -542,7 +542,7 @@ export default function ListPropertyPage() {
         return
       }
 
-      // Step C — Index in Pinecone (don't let this failure block the success)
+      // Step C: Index in Pinecone (don't let this failure block the success)
       try {
         setUploadProgress('Finalising...')
         await indexProperty(data)
@@ -605,7 +605,7 @@ export default function ListPropertyPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-display text-3xl font-black mb-1" style={{color:'#1A1210'}}>List a Property 🏗️</h1>
-          <p className="text-sm" style={{color:'#8A7E78'}}>Step {step + 1} of {steps.length} — {current.title}</p>
+          <p className="text-sm" style={{color:'#8A7E78'}}>Step {step + 1} of {steps.length} : {current.title}</p>
           <div className="mt-4 h-1.5 rounded-full overflow-hidden" style={{backgroundColor:'rgba(26,18,16,0.08)'}}>
             <div className="h-full rounded-full transition-all duration-500"
               style={{width:`${((step + 1) / steps.length) * 100}%`, backgroundColor:'#C96A3A'}} />
