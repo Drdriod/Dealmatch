@@ -123,7 +123,6 @@ ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.professional_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.disputes ENABLE ROW LEVEL SECURITY;
--- (Add others as needed based on audit)
 
 -- 3. Security Hardening Policies
 -- ------------------------------------------------------------
@@ -155,7 +154,7 @@ WITH CHECK (
 );
 
 -- PROFESSIONAL REQUESTS: Require authentication for security
-DROP POLICY IF EXISTS "Anyone can create requests" ON public.professional_requests;
+DROP POLICY IF EXISTS "Authenticated users can request professionals" ON public.professional_requests;
 CREATE POLICY "Authenticated users can request professionals" ON public.professional_requests 
 FOR INSERT WITH CHECK (auth.role() = 'authenticated' AND auth.uid() = user_id);
 
