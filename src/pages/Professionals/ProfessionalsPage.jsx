@@ -63,7 +63,7 @@ function ContactModal({ pro, onClose }) {
 
     setSending(true)
     try {
-      await supabase.from('professional_requests').insert({
+      const { error } = await supabase.from('professional_requests').insert({
         user_id:           user?.id || null,
         professional_id:   pro.id,
         professional_type: pro.type,
@@ -74,10 +74,20 @@ function ContactModal({ pro, onClose }) {
         urgency:           form.urgency,
         status:            'pending',
       })
+
+      if (error) throw error
+
       analytics.professionalContacted(pro.type, pro.id)
       setSent(true)
     } catch (err) {
-      toast.error('Could not send request. Try again.')
+      console.error('Professional request error:', err)
+      if (err.code === '42P01') {
+        toast.error('System error: Table "professional_requests" is missing. Please contact support.')
+      } else if (err.code === '42501') {
+        toast.error('Permission denied. Please ensure you are logged in.')
+      } else {
+        toast.error('Could not send request. Try again.')
+      }
     } finally {
       setSending(false)
     }

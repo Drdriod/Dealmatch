@@ -111,3 +111,38 @@ FOR UPDATE USING (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth
 
 -- 15. Global: Disable public access to sensitive tables if not explicitly allowed
 -- (Supabase tables are private by default if RLS is enabled and no policies exist)
+
+-- 16. Security Audit Fixes (Added Apr 2026)
+-- Ensure 'professional_requests' table exists to prevent the relation error
+CREATE TABLE IF NOT EXISTS public.professional_requests (
+  id                uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id           uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  professional_id   text NOT NULL,
+  professional_type text NOT NULL,
+  professional_name text NOT NULL,
+  client_name       text NOT NULL,
+  client_phone      text NOT NULL,
+  client_email      text,
+  details           text,
+  urgency           text DEFAULT 'normal' CHECK (urgency IN ('normal','soon','urgent')),
+  status            text DEFAULT 'pending' CHECK (status IN ('pending','connected','completed','cancelled')),
+  created_at        timestamptz DEFAULT now()
+);
+
+-- Enable RLS and secure the table
+ALTER TABLE public.professional_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can create requests" ON public.professional_requests;
+CREATE POLICY "Authenticated users can request professionals" ON public.professional_requests 
+FOR INSERT WITH CHECK (auth.role() = 'authenticated' AND auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users see own requests" ON public.professional_requests;
+CREATE POLICY "Users see own requests" ON public.professional_requests 
+FOR SELECT USING (auth.uid() = user_id);
+
+-- 17. Storage: Secure property images
+DROP POLICY IF EXISTS "Property img upload" ON storage.objects;
+CREATE POLICY "Property img upload" ON storage.objects 
+FOR INSERT WITH CHECK (bucket_id = 'property-images' AND auth.role() = 'authenticated');
+
+-- 18. Final Schema Refresh
+NOTIFY pgrst, 'reload schema';
