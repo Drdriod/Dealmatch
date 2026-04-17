@@ -3,6 +3,7 @@
 
 // NOTE: Pinecone calls happen server-side (Vercel API routes) to protect your API key.
 // This file contains the CLIENT-SIDE helpers that call your own API routes.
+import { supabase } from './supabase'
 
 // ─── Match API call ────────────────────────────────────────
 /**
@@ -11,9 +12,13 @@
  */
 export const getAIMatches = async (buyerProfile) => {
   try {
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/match', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
       body: JSON.stringify({ buyerProfile }),
     })
     if (!res.ok) throw new Error('Match API error')
@@ -31,9 +36,13 @@ export const getAIMatches = async (buyerProfile) => {
  */
 export const indexProperty = async (property) => {
   try {
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/index-property', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
       body: JSON.stringify({ property }),
     })
     if (!res.ok) throw new Error('Index API error')

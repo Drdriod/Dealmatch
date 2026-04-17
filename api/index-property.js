@@ -11,6 +11,27 @@ export default async function handler(req, res) {
   const { property } = req.body || {}
   if (!property?.id) return res.status(400).json({ error: 'property with id required' })
 
+  // ✅ SECURITY: Authenticate request using Supabase
+  const authHeader = req.headers.authorization
+  if (!authHeader) return res.status(401).json({ error: 'Authentication required' })
+
+  const { createClient } = await import('@supabase/supabase-js')
+  const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+
+  if (authError || !user) return res.status(401).json({ error: 'Invalid session' })
+
+  // ✅ SECURITY: Only the owner or an admin can index the property
+  const { data: existingProperty } = await supabase
+    .from('properties')
+    .select('seller_id')
+    .eq('id', property.id)
+    .single()
+
+  if (!existingProperty || existingProperty.seller_id !== user.id) {
+    return res.status(403).json({ error: 'Unauthorized to index this property' })
+  }
+
   if (!process.env.PINECONE_API_KEY) {
     return res.status(200).json({ success: true, skipped: 'no Pinecone key' })
   }

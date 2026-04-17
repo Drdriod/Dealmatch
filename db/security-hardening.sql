@@ -69,3 +69,45 @@ FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- Notify Supabase to refresh schema cache
 NOTIFY pgrst, 'reload schema';
+
+-- 9. Deal Agreements: Prevent unauthorized access
+DROP POLICY IF EXISTS "Buyers view own agreements" ON public.deal_agreements;
+CREATE POLICY "Buyers view own agreements" ON public.deal_agreements 
+FOR SELECT USING (auth.uid() = buyer_id);
+
+DROP POLICY IF EXISTS "Auth users create agreements" ON public.deal_agreements;
+CREATE POLICY "Auth users create agreements" ON public.deal_agreements 
+FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+
+-- 10. Escrow Transactions: Strict ownership
+DROP POLICY IF EXISTS "Users view own escrow" ON public.escrow_transactions;
+CREATE POLICY "Users view own escrow" ON public.escrow_transactions 
+FOR SELECT USING (auth.uid() = tenant_id);
+
+-- 11. Mortgage Applications: Strict ownership
+DROP POLICY IF EXISTS "Users manage own applications" ON public.mortgage_applications;
+CREATE POLICY "Users manage own applications" ON public.mortgage_applications 
+FOR ALL USING (auth.uid() = user_id);
+
+-- 12. Messages: Strict participant access
+DROP POLICY IF EXISTS "Users see own messages" ON public.messages;
+CREATE POLICY "Users see own messages" ON public.messages 
+FOR ALL USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
+
+-- 13. Disputes: Strict ownership
+DROP POLICY IF EXISTS "Users see own disputes" ON public.disputes;
+CREATE POLICY "Users see own disputes" ON public.disputes 
+FOR ALL USING (auth.uid() = reporter_id);
+
+-- 14. Storage: Prevent directory traversal and unauthorized access
+-- Ensure users can only upload to their own folder in 'avatars'
+DROP POLICY IF EXISTS "Avatar user upload" ON storage.objects;
+CREATE POLICY "Avatar user upload" ON storage.objects 
+FOR INSERT WITH CHECK (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Avatar user update" ON storage.objects;
+CREATE POLICY "Avatar user update" ON storage.objects 
+FOR UPDATE USING (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 15. Global: Disable public access to sensitive tables if not explicitly allowed
+-- (Supabase tables are private by default if RLS is enabled and no policies exist)

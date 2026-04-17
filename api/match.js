@@ -12,6 +12,16 @@ export default async function handler(req, res) {
   const rl = await redisRateLimit(req, 'match', 30, 60)
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' })
 
+  // ✅ SECURITY: Authenticate request using Supabase
+  const authHeader = req.headers.authorization
+  if (!authHeader) return res.status(401).json({ error: 'Authentication required' })
+
+  const { createClient } = await import('@supabase/supabase-js')
+  const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+
+  if (authError || !user) return res.status(401).json({ error: 'Invalid session' })
+
   const { buyerProfile } = req.body || {}
   if (!buyerProfile) return res.status(400).json({ error: 'buyerProfile required' })
 
