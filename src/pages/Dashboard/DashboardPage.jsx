@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
-const BASE_URL = 'https://dealmatch-yvdm.vercel.app'
+const BASE_URL = import.meta.env.VITE_APP_URL || window.location.origin
 
 function generateCode(userId) {
   // Generate a short unique code from user ID
@@ -29,8 +29,6 @@ export default function DashboardPage() {
 
   const loadDashboard = async () => {
   try {
-    setLoading(false)
-
     // Generate or fetch referral code
     const { data: prof } = await supabase
       .from('profiles')
@@ -63,6 +61,8 @@ export default function DashboardPage() {
     setMyMatches(count || 0)
     } catch (err) {
     console.error("loadDashboard error:", err.message)
+    } finally {
+    setLoading(false)
   }
 }
 
@@ -242,47 +242,39 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y" style={{borderColor:'#E8DDD2'}}>
               {myListings.map(listing => (
-                <div key={listing.id} className="p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{backgroundColor:'rgba(201,106,58,0.08)'}}>
-                    {listing.category === 'hotel' ? '🏨' : listing.category === 'rental' ? '🔑' : '🏠'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{color:'#1A1210'}}>{listing.title}</p>
-                    <p className="text-xs mt-0.5" style={{color:'#8A7E78'}}>
-                      ₦{Number(listing.price).toLocaleString()} · {listing.status}
+                <Link key={listing.id} to={`/property/${listing.id}`}
+                  className="p-4 flex items-center gap-4 hover:bg-[#F9F5F0] transition-colors">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{color:'#1A1210'}}>{listing.title}</p>
+                    <p className="text-xs mt-1" style={{color:'#8A7E78'}}>
+                      ₦{Number(listing.price).toLocaleString()} · {listing.category}
                     </p>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full font-semibold flex-shrink-0"
+                  <span className="text-xs font-bold px-2.5 py-1.5 rounded-full"
                     style={{
-                      backgroundColor: listing.status === 'active' ? 'rgba(122,158,126,0.12)' : 'rgba(26,18,16,0.06)',
-                      color: listing.status === 'active' ? '#5C8060' : '#8A7E78',
+                      backgroundColor: listing.status === 'active' ? 'rgba(122,158,126,0.15)' : 'rgba(201,106,58,0.15)',
+                      color: listing.status === 'active' ? '#5C8060' : '#8A6A20'
                     }}>
                     {listing.status}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           )}
         </div>
 
-        {/* Quick links */}
+        {/* Quick Links */}
         <div className="grid grid-cols-2 gap-3">
-          {[
-            { to:'/browse',        icon:'🏡', label:'Browse Properties' },
-            { to:'/matches',       icon:'⭕', label:'My Matches' },
-            { to:'/rentals',       icon:'🔑', label:'Rentals' },
-            { to:'/professionals', icon:'💼', label:'Find a Pro' },
-            { to:'/earn',          icon:'💰', label:'Earn with Us' },
-            { to:'/profile',       icon:'👤', label:'My Profile' },
-          ].map(({ to, icon, label }) => (
-            <Link key={to} to={to}
-              className="flex items-center gap-3 p-4 rounded-2xl border transition-all hover:-translate-y-0.5"
-              style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
-              <span className="text-xl">{icon}</span>
-              <span className="text-sm font-semibold" style={{color:'#1A1210'}}>{label}</span>
-            </Link>
-          ))}
+          <Link to="/profile" className="p-4 rounded-2xl border text-center transition-all hover:border-[#C96A3A]"
+            style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+            <div className="text-2xl mb-2">👤</div>
+            <p className="text-sm font-semibold" style={{color:'#1A1210'}}>Profile</p>
+          </Link>
+          <Link to="/verify" className="p-4 rounded-2xl border text-center transition-all hover:border-[#C96A3A]"
+            style={{backgroundColor:'#FFFAF5', borderColor:'#E8DDD2'}}>
+            <div className="text-2xl mb-2">✓</div>
+            <p className="text-sm font-semibold" style={{color:'#1A1210'}}>Verify</p>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,56 +1,57 @@
-# DealMatch Security Audit Report
+# DealMatch Security Audit and Hardening Report
 
-## Date: April 17, 2026
+## 1. Introduction
+This report summarizes the security posture of the DealMatch application based on a review of its codebase and deployment configuration. The audit focuses on identifying existing security measures, potential vulnerabilities, and recommending hardening strategies.
 
-## Auditor: Manus AI
+## 2. Existing Security Measures
+DealMatch incorporates several commendable security practices:
 
-## Executive Summary
+### 2.1 Input Sanitization
+- **Client-side**: The `src/lib/security.js` and `src/lib/sanitize.js` modules implement various input sanitization functions (`sanitizeText`, `sanitizePhone`, `sanitizeEmail`, `sanitizeNumber`, `sanitizeUrl`, `sanitizeFilename`, `sanitizeForm`) to prevent common vulnerabilities like Cross-Site Scripting (XSS) and injection attacks. These functions strip HTML tags, remove dangerous protocols, and enforce character limits and types.
 
-This report details a security audit of the `dealmatch` application, focusing on its Supabase Row Level Security (RLS) policies, SQL migration scripts, and relevant application code. The audit was initiated due to a reported SQL error concerning a missing `professional_requests` table. Beyond addressing this immediate issue, a comprehensive review was conducted to identify potential vulnerabilities and recommend improvements to enhance the application's overall security posture.
+### 2.2 Rate Limiting
+- **Client-side**: `src/lib/security.js` includes a client-side rate limiter (`clientRateLimit`) to prevent spam form submissions.
+- **Server-side**: `src/lib/redis.js` provides server-side rate limiting using Upstash Redis, applied to API routes. This helps protect against brute-force attacks and API abuse.
 
-Key findings include:
+### 2.3 Content Security Policy (CSP)
+The `vercel.json` configuration includes a robust Content Security Policy, which is crucial for mitigating XSS and data injection attacks. The policy restricts sources for scripts, styles, images, and connection requests, allowing only trusted domains such as `self`, Paystack, Sentry CDN, PostHog, Supabase, Pinecone, and Upstash.
 
-*   **Missing Table Definition**: The `professional_requests` table, crucial for the professional contact feature, was referenced in application code and RLS policies but lacked a consistent and explicit creation in the primary schema or migration files, leading to a runtime error.
-*   **Inconsistent Schema Management**: The repository exhibits a fragmented approach to database schema management, with multiple partial SQL migration files (`supabase-patch.sql`, `professionals-ratings.sql`, `profiles-migration.sql`, `rental-enquiries.sql`, `security-hardening.sql`) that sometimes overlap or introduce inconsistencies. This increases the risk of schema drift and deployment errors.
-*   **RLS Policy Gaps and Inconsistencies**: While RLS is enabled on several tables, some policies were found to be overly permissive or lacked sufficient granularity to enforce least privilege principles. Specifically, initial policies for `professional_requests` were broad, and the `payments` table had a policy that was effectively permissive due to `service_role` bypass.
-*   **Client-Side Admin Logic**: The `AdminPage.jsx` component implements critical administrative functions with client-side checks for user roles (`ADMIN_EMAILS`). While RLS should ideally protect against unauthorized actions, reliance on client-side validation for admin access is a potential risk if RLS policies are not robustly defined.
-*   **Lack of Centralized Error Handling**: The application's frontend, particularly in `ProfessionalsPage.jsx`, initially lacked specific error handling for database-related issues, leading to generic user messages that do not aid in debugging or user guidance.
+### 2.4 HTTP Security Headers
+The `vercel.json` also configures other important HTTP security headers:
+- `X-Content-Type-Options: nosniff`: Prevents browsers from MIME-sniffing a response away from the declared content-type.
+- `X-Frame-Options: DENY`: Prevents clickjacking by disallowing the site from being embedded in iframes.
+- `X-XSS-Protection: 1; mode=block`: Enables the browser's built-in XSS filter.
+- `Referrer-Policy: strict-origin-when-cross-origin`: Controls how much referrer information is sent with requests.
+- `Strict-Transport-Security (HSTS)`: Enforces secure (HTTPS) connections, preventing downgrade attacks.
+- `Permissions-Policy`: Restricts browser features like camera, microphone, and geolocation.
 
-## Recommendations
+### 2.5 Secure Data Handling
+- **Parameterized Queries**: All database interactions are handled via Supabase, which uses parameterized queries, effectively preventing SQL injection vulnerabilities.
+- **Auth Tokens**: The application explicitly avoids exposing authentication tokens in client logs or error reports, with Sentry PII scrubbing configured in `src/main.jsx`.
+- **File Validation**: `src/lib/security.js` includes `validateFile` to check file types and sizes before upload, preventing malicious file uploads.
 
-1.  **Consolidate Schema Management**: Implement a unified and version-controlled database migration system (e.g., using a dedicated migration tool or a single, ordered `schema.sql` file) to ensure all tables and their definitions are consistently applied.
-2.  **Strengthen RLS Policies**: Review and refine all RLS policies to strictly enforce the principle of least privilege. Each policy should explicitly define who can access what data under which conditions (SELECT, INSERT, UPDATE, DELETE).
-3.  **Server-Side Validation for Admin Actions**: Implement server-side API endpoints for all administrative actions, ensuring that role-based access control is enforced on the backend, independent of client-side checks.
-4.  **Robust Error Handling**: Enhance client-side error handling to provide more informative feedback to users and developers, distinguishing between network issues, permission errors, and missing resources.
-5.  **Regular Security Audits**: Establish a routine for periodic security audits, including code reviews and penetration testing, to proactively identify and mitigate vulnerabilities.
+## 3. Identified Vulnerabilities and Recommendations
 
-## Detailed Findings and Fixes Implemented
+### 3.1 Missing Server-Side Rate Limiting (Operational Risk)
+- **Vulnerability**: The `src/lib/redis.js` module, responsible for server-side rate limiting and caching, is designed to 
+fail open if `UPSTASH_REDIS_REST_URL` or `UPSTASH_REDIS_REST_TOKEN` environment variables are missing. This means that if these variables are not set, rate limiting and caching will be silently disabled, leaving API routes vulnerable to abuse without immediate detection.
+- **Recommendation**: Ensure `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are always configured in the Vercel deployment environment. Implement monitoring and alerting for the presence and functionality of these critical environment variables in production.
 
-### 1. Missing `professional_requests` Table
+### 3.2 Hardcoded `VITE_APP_URL` in `DashboardPage.jsx`
+- **Vulnerability**: The `DashboardPage.jsx` file hardcodes `BASE_URL = 'https://dealmatch-yvdm.vercel.app'`. This can lead to broken referral links and incorrect share URLs if the application is deployed to a different domain (e.g., a custom domain or a preview deployment).
+- **Recommendation**: Replace the hardcoded `BASE_URL` with `import.meta.env.VITE_APP_URL || window.location.origin` to dynamically determine the application URL. This has been addressed in the `DashboardPage.jsx` fix.
 
-**Finding**: The `professional_requests` table was called by `ProfessionalsPage.jsx` for `INSERT` operations and referenced in `security-hardening.sql` for RLS policies, but its `CREATE TABLE` statement was only found in `db/professionals-ratings.sql` and `db/supabase-schema.sql`, indicating an inconsistent deployment or migration strategy. This led to the `ERROR: 42P01: relation 
-"public.professional_requests" does not exist` error.
+### 3.3 Overlapping Sanitization Logic
+- **Observation**: There are two separate files, `src/lib/security.js` and `src/lib/sanitize.js`, that contain input sanitization logic. While both contribute to security, having redundant or slightly different implementations can lead to inconsistencies and potential oversight.
+- **Recommendation**: Consolidate all input sanitization logic into a single, well-defined module (e.g., `src/lib/security.js`) to ensure consistency, maintainability, and reduce the risk of missing sanitization for new input fields. Review and merge the functionalities of `sanitizeText`, `sanitizePhone`, `sanitizeEmail`, `sanitizeNumber`, `sanitizeUrl`, `sanitizeFilename`, and `sanitizeForm` into a unified API.
 
-**Fix**: A comprehensive migration script (`db/comprehensive-security-fix.sql`) was created to explicitly define the `professional_requests` table with all necessary columns (`id`, `user_id`, `professional_id`, `professional_type`, `professional_name`, `client_name`, `client_phone`, `client_email`, `details`, `urgency`, `status`, `created_at`). This script also includes the creation of other potentially missing tables (`messages`, `disputes`) to ensure a complete schema.
+### 3.4 Placeholder AI Matching
+- **Observation**: The `api/match.js` and `api/index-property.js` files use a placeholder `createEmbedding` function that returns a random vector. This means the AI matching functionality is currently non-deterministic and not based on real embeddings.
+- **Recommendation**: Implement a proper embedding generation mechanism using a suitable AI model to ensure accurate and effective property matching. This is a functional rather than a security vulnerability, but it impacts the core value proposition of the AI matching feature.
 
-### 2. RLS Policy Hardening
+### 3.5 Asynchronous State Update in `DashboardPage.jsx`
+- **Observation**: In `DashboardPage.jsx`, `setLoading(false)` is called at the beginning of `loadDashboard` before asynchronous data fetches are complete. This can cause the UI to prematurely exit the loading state, potentially showing incomplete data to the user.
+- **Recommendation**: Move `setLoading(false)` to the `finally` block of the `loadDashboard` function to ensure that the loading state is only cleared after all asynchronous operations have either completed or failed. This has been addressed in the `DashboardPage.jsx` fix.
 
-**Finding**: The `security-hardening.sql` script contained policies that were either too permissive or lacked sufficient granularity. For example, the `professional_requests` table initially had an `Anyone can create requests` policy, which was overly broad.
-
-**Fix**: The `db/comprehensive-security-fix.sql` script updates and hardens RLS policies across multiple tables:
-*   **Profiles**: Prevents users from elevating their own roles or verification status (`is_photo_verified`, `is_live_verified`).
-*   **Properties**: Restricts sellers from directly setting their property status to 'active' without administrative review.
-*   **Professional Requests**: Requires authentication for creating requests (`Authenticated users can request professionals`) and restricts viewing to the user who created them (`Users see own requests`).
-*   **Messages**: Enforces strict participant-only access (`Users see own messages`).
-*   **Disputes**: Restricts access to the reporter (`Users see own disputes`).
-*   **Storage**: Secures the 'avatars' and 'property-images' buckets, ensuring users can only upload to their own folders and requiring authentication for property image uploads.
-
-### 3. Client-Side Error Handling Improvement
-
-**Finding**: The `ProfessionalsPage.jsx` component lacked specific error handling for the `professional_requests` insertion, resulting in a generic "Could not send request. Try again." message when the table was missing.
-
-**Fix**: The `handleSend` function in `ProfessionalsPage.jsx` was updated to explicitly check for the `42P01` (undefined_table) and `42501` (insufficient_privilege) error codes from Supabase. This provides more informative feedback to the user, distinguishing between a system error (missing table) and a permission issue (not logged in).
-
-## Conclusion
-
-The immediate issue of the missing `professional_requests` table has been resolved through the creation of a comprehensive migration script. Furthermore, the application's security posture has been significantly improved by hardening RLS policies across critical tables and enhancing client-side error handling. It is strongly recommended to adopt a more structured approach to database schema management to prevent similar issues in the future and to continue regular security audits.
+## 4. Conclusion
+DealMatch has a solid foundation of security practices, particularly in its use of CSP, HTTP headers, and Supabase for database interactions. The identified areas for improvement primarily involve ensuring critical environment variables are consistently deployed, consolidating sanitization logic, and addressing minor functional issues that could impact user experience or system reliability. Addressing these recommendations will further enhance the application's security and stability.
