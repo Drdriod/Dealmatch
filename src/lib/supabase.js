@@ -36,7 +36,7 @@ export const signUp = async ({ email, password, fullName, referralCode }) => {
       } 
     },
   })
-// Note: Email confirmation relies on Supabase SMTP settings and RESEND_API_KEY being correctly configured in the environment.
+// Note: Email confirmation relies on Supabase's built-in email service or custom SMTP settings.
   return { data, error }
 }
 

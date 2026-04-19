@@ -48,7 +48,7 @@ export default function AuthPage() {
       console.error('Signup Error:', error)
       // If it's a specific email error, give a more helpful hint
       if (error.message.includes('email')) {
-        return toast.error('Email service error. Please check SMTP settings in Supabase.')
+        return toast.error('Error sending confirmation email. Please try again in a few minutes.')
       }
       return toast.error(error.message)
     }
