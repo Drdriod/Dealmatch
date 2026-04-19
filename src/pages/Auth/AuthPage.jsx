@@ -44,7 +44,14 @@ export default function AuthPage() {
       referralCode: form.referralCode,
     })
     setLoading(false)
-    if (error) return toast.error(error.message)
+    if (error) {
+      console.error('Signup Error:', error)
+      // If it's a specific email error, give a more helpful hint
+      if (error.message.includes('email')) {
+        return toast.error('Email service error. Please check SMTP settings in Supabase.')
+      }
+      return toast.error(error.message)
+    }
     analytics.signedUp('unknown')
     setSignupEmail(form.email)
     setOtpSent(true)
