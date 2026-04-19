@@ -5,6 +5,7 @@ import { signUp, signIn, signInWithGoogle, resetPassword } from '@/lib/supabase'
 import { analytics } from '@/lib/posthog'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
+import { supabase } from '@/lib/supabase'
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18">
@@ -23,19 +24,22 @@ export default function AuthPage() {
   const [loading, setLoading]   = useState(false)
   const [form, setForm]         = useState({ fullName: '', email: '', password: '', referralCode: params.get('ref') || '' })
 
-  // Signup success state
-  const [signupSuccess, setSignupSuccess] = useState(false)
+  // Verification state: can be 'otp' (6-digit code) or 'link' (magic link)
+  const [verificationSent, setVerificationSent] = useState(false)
+  const [verificationType, setVerificationType] = useState(null) // 'otp' or 'link'
+  const [otp, setOtp]             = useState(['','','','','',''])
+  const [verifying, setVerifying] = useState(false)
   const [signupEmail, setSignupEmail] = useState('')
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
-  // ─── Sign Up: no role here anymore ──────────────────
+  // ─── Sign Up ──────────────────────────────────────────
   const handleSignUp = async (e) => {
     e.preventDefault()
     if (!form.fullName || !form.email || !form.password) return toast.error('Please fill all fields')
     if (form.password.length < 8) return toast.error('Password must be at least 8 characters')
     setLoading(true)
-    const { error } = await signUp({
+    const { data, error } = await signUp({
       email:    form.email,
       password: form.password,
       fullName: form.fullName,
@@ -46,10 +50,66 @@ export default function AuthPage() {
       console.error('Signup Error:', error)
       return toast.error(error.message)
     }
+    
     analytics.signedUp('unknown')
     setSignupEmail(form.email)
-    setSignupSuccess(true)
-    toast.success('Check your email for the confirmation link!')
+    setVerificationSent(true)
+    
+    // Determine if we're using OTP or Magic Link
+    // If user.identities is empty, it means email confirmation is required
+    if (data?.user?.identities?.length === 0) {
+      setVerificationType('otp')
+      toast.success('Check your email for the 6-digit code!')
+    } else {
+      setVerificationType('link')
+      toast.success('Check your email for the confirmation link!')
+    }
+  }
+
+  // ─── OTP handlers ─────────────────────────────────────
+  const handleOtpChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return
+    const newOtp = [...otp]
+    newOtp[index] = value.slice(-1)
+    setOtp(newOtp)
+    if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus()
+  }
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const newOtp = [...otp]
+    pasted.split('').forEach((digit, i) => { newOtp[i] = digit })
+    setOtp(newOtp)
+    document.getElementById(`otp-${Math.min(pasted.length, 5)}`)?.focus()
+  }
+
+  const handleVerifyOtp = async () => {
+    const code = otp.join('')
+    if (code.length < 6) return toast.error('Enter the complete 6-digit code')
+    setVerifying(true)
+    const { error } = await supabase.auth.verifyOtp({
+      email: signupEmail,
+      token: code,
+      type:  'email',
+    })
+    setVerifying(false)
+    if (error) return toast.error('Invalid code. Please check and try again.')
+    toast.success('Email confirmed! Welcome to DealMatch 🎉')
+    navigate('/onboarding')
+  }
+
+  const handleResendOtp = async () => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email: signupEmail })
+    if (error) return toast.error(error.message)
+    toast.success('New code sent!')
+    setOtp(['','','','','',''])
   }
 
   // ─── Sign In ──────────────────────────────────────────
@@ -76,8 +136,59 @@ export default function AuthPage() {
     toast.success('Password reset link sent to your email!')
   }
 
-  // ─── Success screen ────────────────────────────────────
-  if (signupSuccess) {
+  // ─── OTP verification screen ───────────────────────────
+  if (verificationSent && verificationType === 'otp') {
+    return (
+      <div style={{backgroundColor:'#FFFAF5'}} className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6"
+            style={{backgroundColor:'rgba(201,106,58,0.1)'}}>📬</div>
+          <h1 className="font-display text-3xl font-black mb-2" style={{color:'#1A1210'}}>Check your email</h1>
+          <p className="text-sm mb-2 leading-relaxed" style={{color:'#8A7E78'}}>We sent a 6-digit code to</p>
+          <p className="font-semibold text-sm mb-8" style={{color:'#C96A3A'}}>{signupEmail}</p>
+
+          <div className="flex gap-3 justify-center mb-8" onPaste={handleOtpPaste}>
+            {otp.map((digit, i) => (
+              <input key={i} id={`otp-${i}`} type="text" inputMode="numeric"
+                maxLength={1} value={digit}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  borderColor: digit ? '#C96A3A' : '#E8DDD2',
+                  color: digit ? '#C96A3A' : '#1A1210',
+                }}
+                className="w-12 h-14 text-center text-xl font-black rounded-2xl border-2 outline-none transition-all"
+              />
+            ))}
+          </div>
+
+          <button onClick={handleVerifyOtp} disabled={verifying || otp.join('').length < 6}
+            className={clsx('btn-primary w-full py-4 text-base mb-4',
+              otp.join('').length < 6 && 'opacity-40 cursor-not-allowed'
+            )}>
+            {verifying ? 'Verifying...' : 'Confirm Email →'}
+          </button>
+
+          <p style={{color:'#8A7E78'}} className="text-sm">
+            Didn't receive it?{' '}
+            <button onClick={handleResendOtp} style={{color:'#C96A3A'}} className="font-semibold hover:underline">
+              Resend code
+            </button>
+          </p>
+
+          <button onClick={() => { setVerificationSent(false); setOtp(['','','','','','']) }}
+            className="mt-6 flex items-center gap-2 text-sm mx-auto transition-colors"
+            style={{color:'#8A7E78'}}>
+            <ArrowLeft size={14} /> Back to signup
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Magic Link verification screen ────────────────────
+  if (verificationSent && verificationType === 'link') {
     return (
       <div style={{backgroundColor:'#FFFAF5'}} className="min-h-screen flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm text-center">
@@ -88,10 +199,10 @@ export default function AuthPage() {
           <p className="font-semibold text-sm mb-8" style={{color:'#C96A3A'}}>{signupEmail}</p>
 
           <p className="text-sm mb-8 leading-relaxed" style={{color:'#8A7E78'}}>
-            Please click the link in the email to confirm your account and continue.
+            Click the link in the email to confirm your account and continue to DealMatch.
           </p>
 
-          <button onClick={() => setSignupSuccess(false)}
+          <button onClick={() => setVerificationSent(false)}
             className="btn-primary w-full py-4 text-base mb-4">
             Back to Sign In
           </button>
@@ -178,68 +289,55 @@ export default function AuthPage() {
                   style={{color:'rgba(26,18,16,0.5)'}}>Full Name</label>
                 <input className="input" type="text" placeholder="e.g. John Doe"
                   value={form.fullName} onChange={set('fullName')}
-                  style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                />
               </div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
-                  style={{color:'rgba(26,18,16,0.5)'}}>Email Address</label>
-                <input className="input" type="email" placeholder="you@example.com"
+                  style={{color:'rgba(26,18,16,0.5)'}}>Email</label>
+                <input className="input" type="email" placeholder="your@email.com"
                   value={form.email} onChange={set('email')}
-                  style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
-                  style={{color:'rgba(26,18,16,0.5)'}}>Referral Code (Optional)</label>
-                <input className="input" type="text" placeholder="e.g. DM123456"
-                  value={form.referralCode} onChange={set('referralCode')}
-                  style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                />
               </div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
                   style={{color:'rgba(26,18,16,0.5)'}}>Password</label>
                 <div className="relative">
-                  <input className="input pr-12" type={showPass ? 'text' : 'password'}
-                    placeholder="Min. 8 characters" value={form.password} onChange={set('password')}
-                    style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                  <input className="input pr-10" type={showPass ? 'text' : 'password'} placeholder="••••••••"
+                    value={form.password} onChange={set('password')}
+                  />
                   <button type="button" onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
-                    style={{color:'rgba(26,18,16,0.3)'}}>
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {tab === 'signin' && (
-                  <div className="flex justify-end mt-1">
-                    <button type="button" onClick={handleForgotPassword}
-                      className="text-xs font-semibold hover:underline" style={{color:'#C96A3A'}}>
-                      Forgot password?
-                    </button>
-                  </div>
-                )}
+                <p className="text-xs mt-1" style={{color:'rgba(26,18,16,0.4)'}}>
+                  At least 8 characters
+                </p>
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full text-base py-4">
-                {loading ? 'Creating account...' : 'Continue →'}
+              {form.referralCode && (
+                <div className="p-3 rounded-lg" style={{backgroundColor:'rgba(201,106,58,0.1)'}}>
+                  <p className="text-xs" style={{color:'#C96A3A'}}>
+                    ✨ Referred by: <span className="font-semibold">{form.referralCode}</span>
+                  </p>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base">
+                {loading ? 'Creating account...' : 'Create Account →'}
               </button>
 
-              <div className="relative text-center text-xs py-2" style={{color:'rgba(26,18,16,0.3)'}}>
-                <div className="absolute left-0 top-1/2 w-[42%] h-px" style={{backgroundColor:'rgba(26,18,16,0.1)'}} />
-                <div className="absolute right-0 top-1/2 w-[42%] h-px" style={{backgroundColor:'rgba(26,18,16,0.1)'}} />
-                or
-              </div>
-
-              <button type="button" onClick={handleGoogle}
-                className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
-                style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
-                <GoogleIcon /> Continue with Google
-              </button>
-
-              <p className="text-xs text-center leading-relaxed" style={{color:'rgba(26,18,16,0.3)'}}>
-                By signing up you agree to our{' '}
-                <a href="#" style={{color:'#C96A3A'}} className="underline">Terms</a> and{' '}
-                <a href="#" style={{color:'#C96A3A'}} className="underline">Privacy Policy</a>
+              <p className="text-xs text-center" style={{color:'rgba(26,18,16,0.4)'}}>
+                By signing up, you agree to our{' '}
+                <Link to="/legal/terms" className="hover:underline font-semibold" style={{color:'#C96A3A'}}>
+                  Terms
+                </Link>
+                {' '}and{' '}
+                <Link to="/legal/privacy" className="hover:underline font-semibold" style={{color:'#C96A3A'}}>
+                  Privacy Policy
+                </Link>
               </p>
             </form>
           ) : (
@@ -249,58 +347,60 @@ export default function AuthPage() {
                   Welcome back 👋
                 </h1>
                 <p className="text-sm" style={{color:'rgba(26,18,16,0.4)'}}>
-                  Sign in to your DealMatch account.
+                  Sign in to continue to DealMatch.
                 </p>
               </div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
-                  style={{color:'rgba(26,18,16,0.5)'}}>Email Address</label>
-                <input className="input" type="email" placeholder="you@example.com"
+                  style={{color:'rgba(26,18,16,0.5)'}}>Email</label>
+                <input className="input" type="email" placeholder="your@email.com"
                   value={form.email} onChange={set('email')}
-                  style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                />
               </div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider mb-2 block"
                   style={{color:'rgba(26,18,16,0.5)'}}>Password</label>
                 <div className="relative">
-                  <input className="input pr-12" type={showPass ? 'text' : 'password'}
-                    placeholder="Your password" value={form.password} onChange={set('password')}
-                    style={{backgroundColor:'#FFFFFF', color:'#1A1210'}} />
+                  <input className="input pr-10" type={showPass ? 'text' : 'password'} placeholder="••••••••"
+                    value={form.password} onChange={set('password')}
+                  />
                   <button type="button" onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2"
-                    style={{color:'rgba(26,18,16,0.3)'}}>
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {tab === 'signin' && (
-                  <div className="flex justify-end mt-1">
-                    <button type="button" onClick={handleForgotPassword}
-                      className="text-xs font-semibold hover:underline" style={{color:'#C96A3A'}}>
-                      Forgot password?
-                    </button>
-                  </div>
-                )}
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full text-base py-4">
+              <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base">
                 {loading ? 'Signing in...' : 'Sign In →'}
               </button>
 
-              <div className="relative text-center text-xs py-2" style={{color:'rgba(26,18,16,0.3)'}}>
-                <div className="absolute left-0 top-1/2 w-[42%] h-px" style={{backgroundColor:'rgba(26,18,16,0.1)'}} />
-                <div className="absolute right-0 top-1/2 w-[42%] h-px" style={{backgroundColor:'rgba(26,18,16,0.1)'}} />
-                or
-              </div>
-
-              <button type="button" onClick={handleGoogle}
-                className="w-full py-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
-                style={{border:'1px solid #E8DDD2', backgroundColor:'#FFFFFF', color:'#1A1210'}}>
-                <GoogleIcon /> Continue with Google
+              <button type="button" onClick={handleForgotPassword}
+                className="w-full py-2 text-sm font-semibold transition-colors"
+                style={{color:'#C96A3A'}}>
+                Forgot password?
               </button>
             </form>
           )}
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t" style={{borderColor:'#E8DDD2'}} />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2" style={{backgroundColor:'#FFFAF5', color:'rgba(26,18,16,0.4)'}}>
+                or continue with
+              </span>
+            </div>
+          </div>
+
+          <button onClick={handleGoogle} type="button"
+            className="w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-2 font-semibold transition-all hover:bg-gray-50"
+            style={{borderColor:'#E8DDD2', color:'#1A1210'}}>
+            <GoogleIcon /> Google
+          </button>
         </div>
       </div>
     </div>
