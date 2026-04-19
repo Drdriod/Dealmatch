@@ -25,8 +25,7 @@ The following variables are used in the codebase but are **missing** from the Ve
 | `VITE_SENTRY_DSN` | Sentry error tracking DSN | **Medium**: Error tracking and crash reporting will not work. |
 | `VITE_POSTHOG_KEY` | PostHog analytics key | **Medium**: Product analytics and user tracking will not work. |
 | `VITE_POSTHOG_HOST` | PostHog API host (optional) | **Low**: Defaults to `https://app.posthog.com`. |
-| `RESEND_API_KEY` | Email service API key | **High**: Custom SMTP for Supabase Auth emails will fail. |
 
 ## 3. Recommendations
-- **Add Missing Keys**: Please add the `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, and `RESEND_API_KEY` to your Vercel Project Settings.
-- **Security Note**: Ensure that `RESEND_API_KEY` is also configured in your Supabase Dashboard under Authentication -> SMTP Settings.
+- **Add Missing Keys**: Please add the `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `VITE_SENTRY_DSN`, and `VITE_POSTHOG_KEY` to your Vercel Project Settings.
+- **Auth Note**: The project has been updated to use Supabase's built-in email service. Ensure that your Supabase project has email confirmation enabled.

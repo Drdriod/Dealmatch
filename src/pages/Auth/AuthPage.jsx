@@ -23,10 +23,8 @@ export default function AuthPage() {
   const [loading, setLoading]   = useState(false)
   const [form, setForm]         = useState({ fullName: '', email: '', password: '', referralCode: params.get('ref') || '' })
 
-  // OTP state
-  const [otpSent, setOtpSent]     = useState(false)
-  const [otp, setOtp]             = useState(['','','','','',''])
-  const [verifying, setVerifying] = useState(false)
+  // Signup success state
+  const [signupSuccess, setSignupSuccess] = useState(false)
   const [signupEmail, setSignupEmail] = useState('')
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -46,62 +44,12 @@ export default function AuthPage() {
     setLoading(false)
     if (error) {
       console.error('Signup Error:', error)
-      // If it's a specific email error, give a more helpful hint
-      if (error.message.includes('email')) {
-        return toast.error('Error sending confirmation email. Please try again in a few minutes.')
-      }
       return toast.error(error.message)
     }
     analytics.signedUp('unknown')
     setSignupEmail(form.email)
-    setOtpSent(true)
-    toast.success('Check your email for the 6-digit code!')
-  }
-
-  // ─── OTP handlers ─────────────────────────────────────
-  const handleOtpChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return
-    const newOtp = [...otp]
-    newOtp[index] = value.slice(-1)
-    setOtp(newOtp)
-    if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus()
-  }
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus()
-    }
-  }
-
-  const handleOtpPaste = (e) => {
-    e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
-    const newOtp = [...otp]
-    pasted.split('').forEach((digit, i) => { newOtp[i] = digit })
-    setOtp(newOtp)
-    document.getElementById(`otp-${Math.min(pasted.length, 5)}`)?.focus()
-  }
-
-  const handleVerifyOtp = async () => {
-    const code = otp.join('')
-    if (code.length < 6) return toast.error('Enter the complete 6-digit code')
-    setVerifying(true)
-    const { error } = await supabase.auth.verifyOtp({
-      email: signupEmail,
-      token: code,
-      type:  'email',
-    })
-    setVerifying(false)
-    if (error) return toast.error('Invalid code. Please check and try again.')
-    toast.success('Email confirmed! Welcome to DealMatch 🎉')
-    navigate('/onboarding')
-  }
-
-  const handleResendOtp = async () => {
-    const { error } = await supabase.auth.resend({ type: 'signup', email: signupEmail })
-    if (error) return toast.error(error.message)
-    toast.success('New code sent!')
-    setOtp(['','','','','',''])
+    setSignupSuccess(true)
+    toast.success('Check your email for the confirmation link!')
   }
 
   // ─── Sign In ──────────────────────────────────────────
@@ -128,52 +76,29 @@ export default function AuthPage() {
     toast.success('Password reset link sent to your email!')
   }
 
-  // ─── OTP screen ───────────────────────────────────────
-  if (otpSent) {
+  // ─── Success screen ────────────────────────────────────
+  if (signupSuccess) {
     return (
       <div style={{backgroundColor:'#FFFAF5'}} className="min-h-screen flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm text-center">
           <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6"
             style={{backgroundColor:'rgba(201,106,58,0.1)'}}>📬</div>
           <h1 className="font-display text-3xl font-black mb-2" style={{color:'#1A1210'}}>Check your email</h1>
-          <p className="text-sm mb-2 leading-relaxed" style={{color:'#8A7E78'}}>We sent a 6-digit code to</p>
+          <p className="text-sm mb-2 leading-relaxed" style={{color:'#8A7E78'}}>We sent a confirmation link to</p>
           <p className="font-semibold text-sm mb-8" style={{color:'#C96A3A'}}>{signupEmail}</p>
 
-          <div className="flex gap-3 justify-center mb-8" onPaste={handleOtpPaste}>
-            {otp.map((digit, i) => (
-              <input key={i} id={`otp-${i}`} type="text" inputMode="numeric"
-                maxLength={1} value={digit}
-                onChange={(e) => handleOtpChange(i, e.target.value)}
-                onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderColor: digit ? '#C96A3A' : '#E8DDD2',
-                  color: digit ? '#C96A3A' : '#1A1210',
-                }}
-                className="w-12 h-14 text-center text-xl font-black rounded-2xl border-2 outline-none transition-all"
-              />
-            ))}
-          </div>
+          <p className="text-sm mb-8 leading-relaxed" style={{color:'#8A7E78'}}>
+            Please click the link in the email to confirm your account and continue.
+          </p>
 
-          <button onClick={handleVerifyOtp} disabled={verifying || otp.join('').length < 6}
-            className={clsx('btn-primary w-full py-4 text-base mb-4',
-              otp.join('').length < 6 && 'opacity-40 cursor-not-allowed'
-            )}>
-            {verifying ? 'Verifying...' : 'Confirm Email →'}
+          <button onClick={() => setSignupSuccess(false)}
+            className="btn-primary w-full py-4 text-base mb-4">
+            Back to Sign In
           </button>
 
           <p style={{color:'#8A7E78'}} className="text-sm">
-            Didn't receive it?{' '}
-            <button onClick={handleResendOtp} style={{color:'#C96A3A'}} className="font-semibold hover:underline">
-              Resend code
-            </button>
+            Didn't receive it? Check your spam folder or try signing up again.
           </p>
-
-          <button onClick={() => { setOtpSent(false); setOtp(['','','','','','']) }}
-            className="mt-6 flex items-center gap-2 text-sm mx-auto transition-colors"
-            style={{color:'#8A7E78'}}>
-            <ArrowLeft size={14} /> Back to signup
-          </button>
         </div>
       </div>
     )

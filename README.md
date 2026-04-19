@@ -90,7 +90,7 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 | Maps | Google Maps API + Places API |
 | Analytics | PostHog |
 | Error tracking | Sentry (with ErrorBoundary) |
-| Email | Supabase Auth + Resend (custom SMTP) |
+| Email | Supabase Auth (built-in service) |
 | Hosting | Vercel |
 | CDN / DNS / SSL | Cloudflare |
 | Version Control | GitHub |
@@ -109,6 +109,8 @@ DealMatch is a full-stack real estate and hospitality platform for Nigeria. It c
 - **CORS** : API routes locked to app domain only
 - **Sentry ErrorBoundary** : all crashes caught, notified, user shown clean error screen
 - **Auth tokens** : never exposed in client logs or error reports (Sentry PII scrubbing)
+- **CORS Hardening** : API routes now strictly enforce origin checks using `VITE_APP_URL`.
+- **Auth Flow Security** : Switched to Supabase native email confirmation to eliminate client-side OTP vulnerabilities.
 
 ---
 
@@ -137,7 +139,7 @@ Run SQL files in `/db` folder in this order:
 See `.env.example` for all variables. Add to Vercel → Project Settings → Environment Variables.
 
 **Client-safe** (prefix `VITE_`): SUPABASE_URL, SUPABASE_ANON_KEY, PAYSTACK_PUBLIC_KEY, GOOGLE_MAPS_API_KEY, SENTRY_DSN, POSTHOG_KEY  
-**Server-only** (no `VITE_` prefix): PAYSTACK_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, PINECONE_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, RESEND_API_KEY
+**Server-only** (no `VITE_` prefix): PAYSTACK_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, PINECONE_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 
 ---
 

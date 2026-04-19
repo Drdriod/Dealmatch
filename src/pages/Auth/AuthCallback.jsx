@@ -29,7 +29,7 @@ export default function AuthCallback() {
         const urlParams = new URLSearchParams(window.location.search)
         const referredBy = user.user_metadata?.referred_by || urlParams.get('ref')
         
-        await supabase.from('profiles').upsert({
+        const { error: upsertError } = await supabase.from('profiles').upsert({
           id:        user.id,
           email:     user.email,
           full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
@@ -38,6 +38,12 @@ export default function AuthCallback() {
           onboarding_completed: false,
           updated_at: new Date().toISOString(),
         })
+
+        if (upsertError) {
+          console.error('Profile creation error:', upsertError)
+          navigate('/auth?error=profile_creation_failed')
+          return
+        }
         navigate('/onboarding')
         return
       }
